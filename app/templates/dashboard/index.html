@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}首页 - 益友染织{% endblock %}
+{% block content %}
+<h4 class="mb-1"><i class="bi bi-speedometer2"></i> 系统概览</h4>
+<p class="text-muted small mb-3">本月数据（{{ month_start }} 至 {{ today }}）</p>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="card text-center shadow-sm"><div class="card-body py-2"><h3 class="text-primary mb-0">{{ stats.production_count }}</h3><small class="text-muted">新增工艺</small></div></div></div>
+    <div class="col-6 col-md-3"><div class="card text-center shadow-sm"><div class="card-body py-2"><h3 class="text-success mb-0">{{ stats.materials_count }}</h3><small class="text-muted">原料入库</small></div></div></div>
+    <div class="col-6 col-md-3"><div class="card text-center shadow-sm"><div class="card-body py-2"><h3 class="text-info mb-0">{{ stats.delivery_count }}</h3><small class="text-muted">送货记录</small></div></div></div>
+    <div class="col-6 col-md-3"><div class="card text-center shadow-sm"><div class="card-body py-2"><h3 class="text-warning mb-0">{{ stats.consumption_count }}</h3><small class="text-muted">用纱核算</small></div></div></div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100"><div class="card-header py-2"><h6 class="mb-0">最近原料入库</h6></div>
+        <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0">
+            <thead><tr><th>日期</th><th>客户</th><th>件数</th></tr></thead>
+            <tbody>{% for r in recent_materials %}<tr><td>{{ r.receive_date }}</td><td>{{ r.customer.name }}</td><td>{{ r.quantity }}</td></tr>{% else %}<tr><td colspan="3" class="text-muted text-center">本月暂无</td></tr>{% endfor %}</tbody>
+        </table></div></div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100"><div class="card-header py-2"><h6 class="mb-0">最近客户工艺</h6></div>
+        <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0">
+            <thead><tr><th>缸次</th><th>客户</th><th>颜色</th></tr></thead>
+            <tbody>{% for r in recent_production %}<tr><td>{{ r.vat_number }}</td><td>{{ r.customer.name }}</td><td>{{ r.color or '' }}</td></tr>{% else %}<tr><td colspan="3" class="text-muted text-center">本月暂无</td></tr>{% endfor %}</tbody>
+        </table></div></div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100"><div class="card-header py-2"><h6 class="mb-0">最近送货</h6></div>
+        <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0">
+            <thead><tr><th>日期</th><th>客户</th><th>费用</th></tr></thead>
+            <tbody>{% for r in recent_delivery %}<tr><td>{{ r.delivery_date }}</td><td>{{ r.customer.name }}</td><td>{{ r.total_cost or '' }}</td></tr>{% else %}<tr><td colspan="3" class="text-muted text-center">本月暂无</td></tr>{% endfor %}</tbody>
+        </table></div></div></div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}送货单详情 - {{ record.order_number }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-10">
+    <div class="card shadow-sm mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-truck"></i> 送货单 {{ record.order_number }}</h5>
+            <a href="{{ url_for('delivery.index') }}" class="btn btn-sm btn-secondary"><i class="bi bi-arrow-left"></i> 返回</a>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3"><strong>日期：</strong>{{ record.delivery_date }}</div>
+                <div class="col-md-3"><strong>客户：</strong>{{ record.customer.name }}</div>
+                <div class="col-md-3"><strong>缸次：</strong>{{ record.vat_batch or '-' }}</div>
+                <div class="col-md-3"><strong>颜色：</strong>{{ record.color or '-' }}</div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-3"><strong>板长：</strong>{{ record.board_length or '-' }}m</div>
+                <div class="col-md-3"><strong>染色长度：</strong>{{ record.dyeing_length or '-' }}m</div>
+                <div class="col-md-3"><strong>费率：</strong>{{ record.rate or '-' }}</div>
+                <div class="col-md-3"><strong>费用合计：</strong><span class="text-danger fw-bold">{{ record.total_cost or '-' }}</span></div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-4"><strong>来纱品种：</strong>{{ record.yarn_type or '-' }}</div>
+                <div class="col-md-4"><strong>用纱：</strong>{{ record.yarn_used or '-' }}</div>
+                <div class="col-md-4"><strong>余纱：</strong>{{ record.yarn_remaining or '-' }}</div>
+            </div>
+            {% if record.remark %}<div class="mt-2"><strong>备注：</strong>{{ record.remark }}</div>{% endif %}
+        </div>
+    </div>
+    {% if details %}
+    <div class="card shadow-sm mb-3"><div class="card-header"><h6 class="mb-0">缸号明细</h6></div>
+    <div class="card-body p-0"><table class="table table-sm mb-0">
+        <thead class="table-light"><tr><th>缸号</th><th>米数</th><th>备注</th></tr></thead>
+        <tbody>{% for d in details %}<tr><td>{{ d.vat_number }}</td><td>{{ d.length or '' }}</td><td>{{ d.remark or '' }}</td></tr>{% endfor %}</tbody>
+    </table></div></div>
+    {% endif %}
+</div></div>
+{% endblock %}

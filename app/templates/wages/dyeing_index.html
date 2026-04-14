@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}浆染车间工资 - 益友染织{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-person-badge"></i> 浆染车间工资</h4>
+    {% if current_user.has_permission('dyeing_wage', 'edit') %}
+    <a href="{{ url_for('wages.dyeing_create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增记录</a>
+    {% endif %}
+</div>
+<div class="card shadow-sm mb-3"><div class="card-body py-2">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-6 col-md-3"><input type="month" name="month" class="form-control form-control-sm" value="{{ month }}"></div>
+        <div class="col-6 col-md-3"><button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-search"></i> 查询</button></div>
+    </form>
+</div></div>
+<div class="card shadow-sm"><div class="card-body p-0"><div class="table-responsive">
+    <table class="table table-hover table-striped mb-0 align-middle">
+        <thead class="table-light"><tr><th>月份</th><th>员工</th><th>基本工资</th><th>出勤</th><th>加班费</th><th>扣款</th><th class="text-end fw-bold">实发工资</th><th>备注</th><th>操作</th></tr></thead>
+        <tbody>
+        {% for r in records %}
+        <tr>
+            <td>{{ r.wage_month }}</td>
+            <td>{{ r.employee_name }}</td>
+            <td>{{ r.base_salary }}</td>
+            <td>{{ r.attendance_days or '' }}</td>
+            <td>{{ r.overtime or 0 }}</td>
+            <td>{{ r.deduction or 0 }}</td>
+            <td class="text-end fw-bold">{{ r.net_salary or '' }}</td>
+            <td><small class="text-muted">{{ r.remark or '' }}</small></td>
+            <td class="text-nowrap">
+                {% if current_user.has_permission('dyeing_wage', 'edit') %}
+                <a href="{{ url_for('wages.dyeing_edit', id=r.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                <form method="POST" action="{{ url_for('wages.dyeing_delete', id=r.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')">
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="text-center text-muted py-4">本月暂无记录</td></tr>
+        {% endfor %}
+        </tbody>
+        {% if records %}
+        <tfoot><tr class="table-light"><td colspan="6" class="text-end fw-bold">合计</td><td class="text-end fw-bold">{{ '%.2f' % total_net }}</td><td colspan="2"></td></tr></tfoot>
+        {% endif %}
+    </table>
+</div></div></div>
+{% endblock %}

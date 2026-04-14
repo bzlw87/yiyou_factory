@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}新增余纱流转{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-6"><div class="card shadow-sm">
+    <div class="card-header"><h5 class="mb-0"><i class="bi bi-arrow-left-right"></i> 新增余纱流转</h5></div>
+    <div class="card-body">
+        <div class="alert alert-info"><small>同一客户的不同缸次之间，上一个缸次剩的纱被下一个缸次拿去用了。先选客户，再选来源和去向缸次。</small></div>
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label">客户 <span class="text-danger">*</span></label>
+                <select id="customerSelect" class="form-select" required onchange="loadConsumptions()">
+                    <option value="">-- 先选客户 --</option>
+                    {% for c in customers %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">来源缸次（纱从哪来）<span class="text-danger">*</span></label>
+                <select name="from_consumption_id" id="fromSelect" class="form-select" required disabled>
+                    <option value="">-- 先选客户 --</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">去向缸次（纱去哪了）<span class="text-danger">*</span></label>
+                <select name="to_consumption_id" id="toSelect" class="form-select" required disabled>
+                    <option value="">-- 先选客户 --</option>
+                </select>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-8">
+                    <label class="form-label">数量 <span class="text-danger">*</span></label>
+                    <input type="text" name="amount" class="form-control" required placeholder="如 500">
+                </div>
+                <div class="col-4">
+                    <label class="form-label">单位</label>
+                    <input type="text" name="unit" class="form-control" placeholder="kg/T">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">备注</label>
+                <textarea name="remark" class="form-control" rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+            <a href="{{ url_for('consumption.transfer_list') }}" class="btn btn-secondary">取消</a>
+        </form>
+    </div>
+</div></div></div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function loadConsumptions() {
+    var customerId = document.getElementById('customerSelect').value;
+    var fromSel = document.getElementById('fromSelect');
+    var toSel = document.getElementById('toSelect');
+
+    if (!customerId) {
+        fromSel.innerHTML = '<option value="">-- 先选客户 --</option>';
+        toSel.innerHTML = '<option value="">-- 先选客户 --</option>';
+        fromSel.disabled = true;
+        toSel.disabled = true;
+        return;
+    }
+
+    fetch('{{ url_for("consumption.transfer_api_consumptions") }}?customer_id=' + customerId)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var html = '<option value="">-- 选择缸次 --</option>';
+            data.forEach(function(item) {
+                html += '<option value="' + item.id + '">' + item.vat_number + '</option>';
+            });
+            fromSel.innerHTML = html;
+            toSel.innerHTML = html;
+            fromSel.disabled = false;
+            toSel.disabled = false;
+
+            if (data.length < 2) {
+                fromSel.innerHTML = '<option value="">该客户缸次不足2个，无法流转</option>';
+                toSel.innerHTML = '<option value="">该客户缸次不足2个，无法流转</option>';
+                fromSel.disabled = true;
+                toSel.disabled = true;
+            }
+        })
+        .catch(function() {
+            fromSel.innerHTML = '<option value="">加载失败</option>';
+            toSel.innerHTML = '<option value="">加载失败</option>';
+        });
+}
+</script>
+{% endblock %}

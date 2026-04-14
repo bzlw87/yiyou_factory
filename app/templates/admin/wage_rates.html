@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}工资费率 - 系统管理{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-cash-stack"></i> 工资费率管理</h4>
+    <a href="{{ url_for('admin.wage_rate_create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增费率</a>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light"><tr><th>名称</th><th>费率(元/m)</th><th>说明</th><th>状态</th><th>操作</th></tr></thead>
+                <tbody>
+                {% for r in rates %}
+                <tr>
+                    <td>{{ r.name }}</td>
+                    <td><strong>{{ r.rate }}</strong> 元/m</td>
+                    <td>{{ r.description or '' }}</td>
+                    <td>{% if r.is_active %}<span class="badge bg-success">启用</span>{% else %}<span class="badge bg-secondary">停用</span>{% endif %}</td>
+                    <td class="text-nowrap">
+                        <a href="{{ url_for('admin.wage_rate_edit', id=r.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                        <form method="POST" action="{{ url_for('admin.wage_rate_delete', id=r.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')">
+                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center text-muted py-4">暂无费率设置</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

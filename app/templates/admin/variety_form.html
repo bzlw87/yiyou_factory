@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if variety else '新增' }}品种{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-6"><div class="card shadow-sm">
+    <div class="card-header"><h5 class="mb-0"><i class="bi bi-tags"></i> {{ '编辑' if variety else '新增' }}品种</h5></div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label">品种名称 <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control" required value="{{ variety.name if variety else '' }}">
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="is_active" class="form-check-input" id="isActive" {% if not variety or variety.is_active %}checked{% endif %}>
+                <label class="form-check-label" for="isActive">启用</label>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+            <a href="{{ url_for('admin.variety_list') }}" class="btn btn-secondary">取消</a>
+        </form>
+    </div>
+</div></div></div>
+{% endblock %}

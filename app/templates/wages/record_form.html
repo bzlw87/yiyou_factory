@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if record else '新增' }}工资记录 - {{ emp.name }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-6"><div class="card shadow-sm">
+    <div class="card-header"><h5 class="mb-0"><i class="bi bi-wallet2"></i> {{ '编辑' if record else '新增' }}工资 - {{ emp.name }}</h5></div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">年份 <span class="text-danger">*</span></label>
+                    <input type="number" name="year" class="form-control" required value="{{ record.year if record else year }}"></div>
+                <div class="col-md-6"><label class="form-label">月份 <span class="text-danger">*</span></label>
+                    <select name="month" class="form-select" required>
+                        <option value="1" {% if record and record.month == 1 %}selected{% endif %}>1月</option>
+                        <option value="2" {% if record and record.month == 2 %}selected{% endif %}>2月</option>
+                        <option value="3" {% if record and record.month == 3 %}selected{% endif %}>3月</option>
+                        <option value="4" {% if record and record.month == 4 %}selected{% endif %}>4月</option>
+                        <option value="5" {% if record and record.month == 5 %}selected{% endif %}>5月</option>
+                        <option value="6" {% if record and record.month == 6 %}selected{% endif %}>6月</option>
+                        <option value="7" {% if record and record.month == 7 %}selected{% endif %}>7月</option>
+                        <option value="8" {% if record and record.month == 8 %}selected{% endif %}>8月</option>
+                        <option value="9" {% if record and record.month == 9 %}selected{% endif %}>9月</option>
+                        <option value="10" {% if record and record.month == 10 %}selected{% endif %}>10月</option>
+                        <option value="11" {% if record and record.month == 11 %}selected{% endif %}>11月</option>
+                        <option value="12" {% if record and record.month == 12 %}selected{% endif %}>12月</option>
+                        <option value="0" {% if record and record.month == 0 %}selected{% endif %}>年终奖/补贴</option>
+                    </select></div>
+                <div class="col-md-4"><label class="form-label">应发工资</label>
+                    <input type="number" step="0.01" name="gross_wage" class="form-control" value="{{ record.gross_wage if record else emp.base_salary or '' }}"></div>
+                <div class="col-md-4"><label class="form-label">休息天数</label>
+                    <input type="number" name="rest_days" class="form-control" value="{{ record.rest_days if record and record.rest_days else '' }}"></div>
+                <div class="col-md-4"><label class="form-label">扣款</label>
+                    <input type="number" step="0.01" name="deduction" class="form-control" value="{{ record.deduction if record and record.deduction else '' }}"></div>
+                <div class="col-md-6"><label class="form-label">实发金额</label>
+                    <input type="number" step="0.01" name="net_wage" class="form-control" value="{{ record.net_wage if record else '' }}">
+                    <small class="text-muted">应发 - 扣款，可手动调整</small></div>
+                <div class="col-md-6">
+                    <div class="form-check mt-4">
+                        <input type="checkbox" name="is_paid" class="form-check-input" id="isPaid" {% if record and record.is_paid %}checked{% endif %}>
+                        <label class="form-check-label" for="isPaid">已发放</label>
+                    </div>
+                </div>
+                <div class="col-md-6"><label class="form-label">发放日期</label>
+                    <input type="date" name="paid_date" class="form-control" value="{{ record.paid_date if record and record.paid_date else '' }}"></div>
+                <div class="col-12"><label class="form-label">备注</label>
+                    <textarea name="remark" class="form-control" rows="2" placeholder="如：5+6月合发、预支已发、产量奖等">{{ record.remark if record else '' }}</textarea></div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+                <a href="{{ url_for('wages.wage_detail', emp_id=emp.id, year=year) }}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div></div></div>
+{% endblock %}

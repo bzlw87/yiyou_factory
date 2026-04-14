@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}整经工资 - 益友染织{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-person-lines-fill"></i> 整经工资</h4>
+    {% if current_user.has_permission('warping_wage', 'edit') %}
+    <a href="{{ url_for('wages.warping_create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增记录</a>
+    {% endif %}
+</div>
+<div class="card shadow-sm mb-3"><div class="card-body py-2">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-4 col-md-2"><input type="number" name="year" class="form-control form-control-sm" placeholder="年" value="{{ year }}"></div>
+        <div class="col-4 col-md-2"><input type="number" name="month" class="form-control form-control-sm" placeholder="月" min="1" max="12" value="{{ month }}"></div>
+        <div class="col-4 col-md-3">
+            <button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-search"></i> 查询</button>
+        </div>
+    </form>
+</div></div>
+{% if summary %}
+<div class="card shadow-sm mb-3"><div class="card-header"><h6 class="mb-0">{{ year }}年{{ month }}月 员工汇总</h6></div>
+<div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0">
+    <thead class="table-light"><tr><th>员工</th><th>记录条数</th><th class="text-end">月工资合计</th></tr></thead>
+    <tbody>
+    {% for name, info in summary.items() %}
+    <tr><td><strong>{{ name }}</strong></td><td>{{ info.count }}</td><td class="text-end fw-bold">{{ '%.2f' % info.total }}</td></tr>
+    {% endfor %}
+    </tbody>
+</table></div></div></div>
+{% endif %}
+<div class="card shadow-sm"><div class="card-header"><h6 class="mb-0">明细记录</h6></div>
+<div class="card-body p-0"><div class="table-responsive">
+    <table class="table table-hover table-striped mb-0 align-middle">
+        <thead class="table-light"><tr><th>日期</th><th>员工</th><th class="text-end">金额</th><th>备注</th><th>操作</th></tr></thead>
+        <tbody>
+        {% for r in records %}
+        <tr>
+            <td>{{ r.wage_date }}</td>
+            <td>{{ r.employee_name }}</td>
+            <td class="text-end">{{ r.amount }}</td>
+            <td><small class="text-muted">{{ r.remark or '' }}</small></td>
+            <td class="text-nowrap">
+                {% if current_user.has_permission('warping_wage', 'edit') %}
+                <a href="{{ url_for('wages.warping_edit', id=r.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                <form method="POST" action="{{ url_for('wages.warping_delete', id=r.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')">
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center text-muted py-4">本月暂无记录</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div></div></div>
+{% endblock %}

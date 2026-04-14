@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ supplier.name }} 应付明细 - 益友染织{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-arrow-up-circle"></i> {{ supplier.name }} - 应付明细</h4>
+    <div>
+        {% if current_user.has_permission('finance', 'edit') %}
+        <a href="{{ url_for('finance.payable_adjust_create', supplier_id=supplier.id) }}" class="btn btn-info btn-sm"><i class="bi bi-plus-lg"></i> 手动调整</a>
+        <a href="{{ url_for('finance.payment_made_create', supplier_id=supplier.id) }}" class="btn btn-success btn-sm"><i class="bi bi-plus-lg"></i> 登记付款</a>
+        {% endif %}
+    </div>
+</div>
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3"><div class="card text-center"><div class="card-body py-2"><h5 class="text-primary mb-0">{{ '%.2f' % total_purchase }}</h5><small class="text-muted">采购合计</small></div></div></div>
+    <div class="col-6 col-md-2"><div class="card text-center"><div class="card-body py-2"><h5 class="text-info mb-0">{{ '%.2f' % total_adjust }}</h5><small class="text-muted">手动调整</small></div></div></div>
+    <div class="col-6 col-md-3"><div class="card text-center"><div class="card-body py-2"><h5 class="mb-0">{{ '%.2f' % total_payable }}</h5><small class="text-muted">应付总额</small></div></div></div>
+    <div class="col-6 col-md-2"><div class="card text-center"><div class="card-body py-2"><h5 class="text-success mb-0">{{ '%.2f' % total_paid }}</h5><small class="text-muted">已付金额</small></div></div></div>
+    <div class="col-12 col-md-2"><div class="card text-center"><div class="card-body py-2"><h5 class="{% if balance > 0 %}text-danger{% endif %} mb-0">{{ '%.2f' % balance }}</h5><small class="text-muted">欠款余额</small></div></div></div>
+</div>
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card shadow-sm mb-3"><div class="card-header"><h6 class="mb-0">采购记录</h6></div>
+        <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0">
+            <thead><tr><th>日期</th><th>品种</th><th>重量(t)</th><th>单价</th><th class="text-end">金额</th></tr></thead>
+            <tbody>{% for p in purchases %}<tr><td>{{ p.purchase_date }}</td><td>{{ p.material_type.name }}</td><td>{{ p.weight_tons }}</td><td>{{ p.unit_price }}</td><td class="text-end">{{ p.total_amount or 0 }}</td></tr>{% else %}<tr><td colspan="5" class="text-muted text-center">暂无</td></tr>{% endfor %}</tbody>
+        </table></div></div></div>
+        {% if adjustments %}
+        <div class="card shadow-sm"><div class="card-header"><h6 class="mb-0">手动调整</h6></div>
+        <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0">
+            <thead><tr><th>日期</th><th>原因</th><th class="text-end">金额</th><th>备注</th><th></th></tr></thead>
+            <tbody>{% for a in adjustments %}<tr>
+                <td>{{ a.adjust_date }}</td><td>{{ a.reason }}</td><td class="text-end text-info">{{ a.amount }}</td><td><small class="text-muted">{{ a.remark or '' }}</small></td>
+                <td>{% if current_user.has_permission('finance', 'edit') %}<form method="POST" action="{{ url_for('finance.payable_adjust_delete', id=a.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button></form>{% endif %}</td>
+            </tr>{% endfor %}</tbody>
+        </table></div></div></div>
+        {% endif %}
+    </div>
+    <div class="col-lg-5">
+        <div class="card shadow-sm"><div class="card-header"><h6 class="mb-0">付款记录</h6></div>
+        <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0">
+            <thead><tr><th>日期</th><th class="text-end">金额</th><th>方式</th><th></th></tr></thead>
+            <tbody>{% for p in payments %}<tr><td>{{ p.payment_date }}</td><td class="text-end text-success">{{ p.amount }}</td><td>{{ p.method or '' }}</td>
+            <td>{% if current_user.has_permission('finance', 'edit') %}<form method="POST" action="{{ url_for('finance.payment_made_delete', id=p.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button></form>{% endif %}</td>
+            </tr>{% else %}<tr><td colspan="4" class="text-muted text-center">暂无</td></tr>{% endfor %}</tbody>
+        </table></div></div></div>
+    </div>
+</div>
+<a href="{{ url_for('finance.payables') }}" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> 返回</a>
+{% endblock %}

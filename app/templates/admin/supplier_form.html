@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if supplier else '新增' }}供应商{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-6"><div class="card shadow-sm">
+    <div class="card-header"><h5 class="mb-0"><i class="bi bi-shop"></i> {{ '编辑' if supplier else '新增' }}供应商</h5></div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label">供应商名称 <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control" required value="{{ supplier.name if supplier else '' }}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">联系人</label>
+                <input type="text" name="contact" class="form-control" value="{{ supplier.contact if supplier else '' }}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">电话</label>
+                <input type="text" name="phone" class="form-control" value="{{ supplier.phone if supplier else '' }}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">备注</label>
+                <textarea name="remark" class="form-control" rows="2">{{ supplier.remark if supplier else '' }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+            <a href="{{ url_for('admin.supplier_list') }}" class="btn btn-secondary">取消</a>
+        </form>
+    </div>
+</div></div></div>
+{% endblock %}

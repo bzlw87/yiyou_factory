@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}权限设置 - {{ user.display_name }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8"><div class="card shadow-sm">
+    <div class="card-header"><h5 class="mb-0"><i class="bi bi-shield-lock"></i> 权限设置 - {{ user.display_name }}</h5></div>
+    <div class="card-body">
+        <form method="POST">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light"><tr><th>模块</th><th class="text-center">查看</th><th class="text-center">编辑</th></tr></thead>
+                <tbody>
+                {% for key, name in modules.items() %}
+                <tr>
+                    <td>{{ name }}</td>
+                    <td class="text-center"><input type="checkbox" name="{{ key }}_view" class="form-check-input" {% if perms.get(key) and perms[key].can_view %}checked{% endif %}></td>
+                    <td class="text-center"><input type="checkbox" name="{{ key }}_edit" class="form-check-input" {% if perms.get(key) and perms[key].can_edit %}checked{% endif %}></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+            <a href="{{ url_for('admin.user_list') }}" class="btn btn-secondary">返回</a>
+        </form>
+    </div>
+</div></div></div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}品种管理 - 益友染织{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0"><i class="bi bi-tags"></i> 品种管理</h4>
+    <a href="{{ url_for('admin.variety_create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增品种</a>
+</div>
+<div class="card shadow-sm"><div class="card-body p-0"><div class="table-responsive">
+    <table class="table table-hover table-striped mb-0 align-middle">
+        <thead class="table-light"><tr><th>品种名称</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+        {% for v in varieties %}
+        <tr>
+            <td>{{ v.name }}</td>
+            <td>{% if v.is_active %}<span class="badge bg-success">启用</span>{% else %}<span class="badge bg-secondary">停用</span>{% endif %}</td>
+            <td class="text-nowrap">
+                <a href="{{ url_for('admin.variety_edit', id=v.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                <form method="POST" action="{{ url_for('admin.variety_delete', id=v.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')">
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="text-center text-muted py-4">暂无品种</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div></div></div>
+{% endblock %}

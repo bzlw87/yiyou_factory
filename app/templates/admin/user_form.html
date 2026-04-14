@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if user else '新增' }}用户{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header"><h5 class="mb-0"><i class="bi bi-person"></i> {{ '编辑' if user else '新增' }}用户</h5></div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">用户名 <span class="text-danger">*</span></label>
+                        <input type="text" name="username" class="form-control" required value="{{ user.username if user else '' }}" {% if user %}readonly{% endif %}>
+                        {% if user %}<div class="form-text">用户名创建后不可修改</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">显示名称（中文名）<span class="text-danger">*</span></label>
+                        <input type="text" name="display_name" class="form-control" required value="{{ user.display_name if user else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">密码 {% if not user %}<span class="text-danger">*</span>{% endif %}</label>
+                        <input type="password" name="password" class="form-control" {% if not user %}required{% endif %} minlength="6">
+                        {% if user %}<div class="form-text">留空则不修改密码</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">角色</label>
+                        <select name="role" class="form-select">
+                            <option value="staff" {% if user and user.role == 'staff' %}selected{% endif %}>普通员工</option>
+                            <option value="admin" {% if user and user.role == 'admin' %}selected{% endif %}>管理员</option>
+                        </select>
+                    </div>
+                    {% if user %}
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_active_user" class="form-check-input" id="activeCheck" {% if user.is_active_user %}checked{% endif %}>
+                        <label class="form-check-label" for="activeCheck">启用账号</label>
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <a href="{{ url_for('admin.user_list') }}" class="btn btn-secondary">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

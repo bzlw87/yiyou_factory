@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "includes/pagination.html" import render_pagination %}
+{% block title %}原材料采购 - 益友染织{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-bag"></i> 原材料采购</h4>
+    {% if current_user.has_permission('finance', 'edit') %}
+    <a href="{{ url_for('finance.purchase_create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增采购</a>
+    {% endif %}
+</div>
+<div class="card shadow-sm mb-3"><div class="card-body py-2">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-6 col-md-3">
+            <select name="supplier_id" class="form-select form-select-sm">
+                <option value="">全部供应商</option>
+                {% for s in suppliers %}<option value="{{ s.id }}" {% if supplier_id == s.id|string %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-md-3">
+            <button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-search"></i> 筛选</button>
+            <a href="{{ url_for('finance.purchase_list') }}" class="btn btn-outline-secondary btn-sm">重置</a>
+        </div>
+    </form>
+</div></div>
+<div class="card shadow-sm"><div class="card-body p-0"><div class="table-responsive">
+    <table class="table table-hover table-striped mb-0 align-middle">
+        <thead class="table-light"><tr><th>日期</th><th>供应商</th><th>原材料品种</th><th>重量(t)</th><th>单价(元/t)</th><th class="text-end">金额</th><th>备注</th><th>操作</th></tr></thead>
+        <tbody>
+        {% for r in records %}
+        <tr>
+            <td>{{ r.purchase_date }}</td>
+            <td>{{ r.supplier.name }}</td>
+            <td>{{ r.material_type.name }}</td>
+            <td>{{ r.weight_tons }}</td>
+            <td>{{ r.unit_price }}</td>
+            <td class="text-end">{{ r.total_amount or '' }}</td>
+            <td><small class="text-muted">{{ r.remark or '' }}</small></td>
+            <td class="text-nowrap">
+                {% if current_user.has_permission('finance', 'edit') %}
+                <a href="{{ url_for('finance.purchase_edit', id=r.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                <form method="POST" action="{{ url_for('finance.purchase_delete', id=r.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')">
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">暂无采购记录</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div></div></div>
+{{ render_pagination(pagination, 'finance.purchase_list') }}
+{% endblock %}

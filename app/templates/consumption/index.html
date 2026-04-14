@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "includes/pagination.html" import render_pagination %}
+{% block title %}用纱核算 - 益友染织{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-calculator"></i> 用纱核算</h4>
+    {% if current_user.has_permission('consumption', 'edit') %}
+    <a href="{{ url_for('consumption.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增核算</a>
+    {% endif %}
+</div>
+<div class="card shadow-sm mb-3"><div class="card-body py-2">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-6 col-md-3"><input type="text" name="keyword" class="form-control form-control-sm" placeholder="客户名称" value="{{ keyword }}"></div>
+        <div class="col-6 col-md-3"><input type="text" name="vat" class="form-control form-control-sm" placeholder="缸次号" value="{{ vat }}"></div>
+        <div class="col-12 col-md-3">
+            <button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-search"></i> 搜索</button>
+            <a href="{{ url_for('consumption.index') }}" class="btn btn-outline-secondary btn-sm">重置</a>
+        </div>
+    </form>
+</div></div>
+<div class="card shadow-sm"><div class="card-body p-0"><div class="table-responsive">
+    <table class="table table-hover table-striped mb-0 align-middle">
+        <thead class="table-light"><tr><th>缸次</th><th>客户</th><th>板长</th><th>浆长</th><th>来纱品种</th><th>来纱重量</th><th>本次用量</th><th>余下重量</th><th>备注</th><th>操作</th></tr></thead>
+        <tbody>
+        {% for r in records %}
+        <tr>
+            <td><strong>{{ r.production_order.vat_number }}</strong></td>
+            <td>{{ r.production_order.customer.name }}</td>
+            <td>{{ r.board_length or '' }}</td>
+            <td>{{ r.sizing_length or '' }}</td>
+            <td>{{ r.incoming_variety or '' }}</td>
+            <td>{{ r.incoming_weight or '' }}</td>
+            <td>{{ r.usage_weight or '' }}</td>
+            <td>{% if r.remaining_weight %}<span class="text-warning">{{ r.remaining_weight }}</span>{% endif %}</td>
+            <td><small class="text-muted">{{ r.remark or '' }}</small></td>
+            <td class="text-nowrap">
+                {% if current_user.has_permission('consumption', 'edit') %}
+                <a href="{{ url_for('consumption.edit', id=r.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                <form method="POST" action="{{ url_for('consumption.delete', id=r.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')">
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="10" class="text-center text-muted py-4">暂无记录</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div></div></div>
+{{ render_pagination(pagination, 'consumption.index') }}
+{% endblock %}

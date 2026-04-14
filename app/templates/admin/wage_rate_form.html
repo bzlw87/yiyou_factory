@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if rate else '新增' }}工资费率{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header"><h5 class="mb-0">{{ '编辑' if rate else '新增' }}工资费率</h5></div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">费率名称 <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" required value="{{ rate.name if rate else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">费率（元/米）<span class="text-danger">*</span></label>
+                        <input type="number" step="0.0001" name="rate" class="form-control" required value="{{ rate.rate if rate else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">说明</label>
+                        <input type="text" name="description" class="form-control" value="{{ rate.description if rate else '' }}">
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_active" class="form-check-input" id="rateActive" {% if not rate or rate.is_active %}checked{% endif %}>
+                        <label class="form-check-label" for="rateActive">启用</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                    <a href="{{ url_for('admin.wage_rate_list') }}" class="btn btn-secondary">取消</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

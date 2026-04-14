@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if record else '新增' }}用纱核算{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-10"><div class="card shadow-sm">
+    <div class="card-header"><h5 class="mb-0"><i class="bi bi-calculator"></i> {{ '编辑' if record else '新增' }}用纱核算</h5></div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">客户 <span class="text-danger">*</span></label>
+                    <input type="text" id="customerInput" class="form-control" list="customerList" required placeholder="选择或输入客户" value="{{ record.production_order.customer.name if record else '' }}" onchange="loadProductions()">
+                    <datalist id="customerList">
+                        {% for c in customers %}<option value="{{ c.name }}">{% endfor %}
+                    </datalist>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">关联缸次 <span class="text-danger">*</span></label>
+                    <select name="production_id" id="productionSelect" class="form-select" required>
+                        <option value="">-- 先选客户 --</option>
+                    </select>
+                    <small class="text-muted">显示该客户最近2个月的缸次</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">板长(m)</label>
+                    <input type="number" step="0.01" name="board_length" class="form-control" value="{{ record.board_length if record else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">浆长(m)</label>
+                    <input type="number" step="0.01" name="sizing_length" class="form-control" value="{{ record.sizing_length if record else '' }}">
+                </div>
+            </div>
+            <hr>
+            <h6 class="text-primary">来纱信息</h6>
+            <p class="text-muted small">客户送来的纱，或上一缸次余下的纱。重量可以写"11T"或"11T+500kg"。</p>
+            <div class="row g-3">
+                <div class="col-md-12">
+                    <label class="form-label">来纱来源</label>
+                    <input type="text" name="incoming_source" class="form-control" placeholder="如：客户送纱 / 来自缸次260XXX余纱" value="{{ record.incoming_source if record else '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">来纱织数</label>
+                    <input type="text" name="incoming_yarn_count" class="form-control" value="{{ record.incoming_yarn_count if record else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">来纱品种</label>
+                    <input type="text" name="incoming_variety" class="form-control" list="varietyList" placeholder="选择或输入" value="{{ record.incoming_variety if record else '' }}">
+                    <datalist id="varietyList">
+                        {% for v in varieties %}<option value="{{ v.name }}">{% endfor %}
+                    </datalist>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">来纱重量</label>
+                    <input type="text" name="incoming_weight" class="form-control" placeholder="如 11T 或 11T+500kg" value="{{ record.incoming_weight if record else '' }}">
+                </div>
+            </div>
+            <hr>
+            <h6 class="text-success">本次用量</h6>
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">本次浆染用量</label>
+                    <input type="text" name="usage_weight" class="form-control" value="{{ record.usage_weight if record else '' }}">
+                </div>
+            </div>
+            <hr>
+            <h6 class="text-warning">余下信息</h6>
+            <p class="text-muted small">本次没用完的纱，将来会成为下一个缸次的来纱。</p>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">余下织数</label>
+                    <input type="text" name="remaining_yarn_count" class="form-control" value="{{ record.remaining_yarn_count if record else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">余下品种</label>
+                    <input type="text" name="remaining_variety" class="form-control" list="varietyList" placeholder="选择或输入" value="{{ record.remaining_variety if record else '' }}">
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">余下重量</label>
+                    <input type="text" name="remaining_weight" class="form-control" value="{{ record.remaining_weight if record else '' }}">
+                </div>
+            </div>
+            <hr>
+            <div class="mb-3">
+                <label class="form-label">备注</label>
+                <textarea name="remark" class="form-control" rows="2">{{ record.remark if record else '' }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+            <a href="{{ url_for('consumption.index') }}" class="btn btn-secondary">取消</a>
+        </form>
+    </div>
+</div></div></div>
+{% endblock %}
+{% block extra_js %}
+<script>
+var currentProductionId = {{ record.production_id|tojson if record and record.production_id else 'null' }};
+
+function loadProductions() {
+    var customerName = document.getElementById('customerInput').value.trim();
+    var sel = document.getElementById('productionSelect');
+
+    if (!customerName) {
+        sel.innerHTML = '<option value="">-- 先选客户 --</option>';
+        return;
+    }
+
+    fetch('{{ url_for("consumption.api_productions_by_customer") }}?customer_name=' + encodeURIComponent(customerName))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var html = '<option value="">-- 选择缸次 --</option>';
+            data.forEach(function(item) {
+                var selected = (currentProductionId && currentProductionId == item.id) ? ' selected' : '';
+                html += '<option value="' + item.id + '"' + selected + '>' + item.vat_number + '</option>';
+            });
+            if (data.length === 0) {
+                html = '<option value="">该客户近2个月无缸次</option>';
+            }
+            sel.innerHTML = html;
+        })
+        .catch(function() {
+            sel.innerHTML = '<option value="">加载失败</option>';
+        });
+}
+
+if (document.getElementById('customerInput').value) {
+    loadProductions();
+}
+</script>
+{% endblock %}

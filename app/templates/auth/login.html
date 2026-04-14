@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}登录 - 益友染织管理系统{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <h3 class="text-center mb-1"><i class="bi bi-building text-primary"></i></h3>
+                <h5 class="text-center mb-3">常州市益友染织有限公司</h5>
+                <p class="text-center text-muted mb-4">生产管理系统</p>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">用户名</label>
+                        <input type="text" name="username" class="form-control" required autofocus placeholder="请输入用户名">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">密码</label>
+                        <input type="password" name="password" class="form-control" required placeholder="请输入密码">
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="remember" class="form-check-input" id="remember">
+                        <label class="form-check-label" for="remember">记住我</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">登 录</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

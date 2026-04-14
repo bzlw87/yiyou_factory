@@ -1,0 +1,89 @@
+/* 
+ * 自定义样式表
+ * Bootstrap 5 已经提供了大部分样式，这里只写需要补充的
+ */
+
+/* 导航栏品牌 Logo 区域 */
+.navbar-brand {
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+/* 卡片统一阴影效果 */
+.card {
+    border: none;
+    border-radius: 0.5rem;
+}
+
+/* 表格在手机上可以左右滑动 */
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 表格中的操作按钮更紧凑 */
+.table .btn-sm {
+    padding: 0.15rem 0.4rem;
+    font-size: 0.8rem;
+}
+
+/* 仪表盘统计卡片 */
+.card h2 {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* 搜索表单在手机上的间距 */
+@media (max-width: 768px) {
+    .card-body.py-2 {
+        padding: 0.5rem !important;
+    }
+    
+    /* 手机上表格字体稍小 */
+    .table {
+        font-size: 0.85rem;
+    }
+    
+    /* 手机上标题字体稍小 */
+    h4 {
+        font-size: 1.1rem;
+    }
+}
+
+/* 表单标签加粗 */
+.form-label {
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+/* 必填字段的星号 */
+.text-danger {
+    font-weight: bold;
+}
+
+/* Flash 消息自动消失动画 */
+.alert {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 轴次明细表格输入框更紧凑 */
+#detailTable .form-control-sm,
+#vatDetailBody .form-control-sm {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.85rem;
+}
+
+/* 分页在手机上自动换行 */
+.pagination {
+    gap: 2px;
+}
+
+/* 页脚 */
+footer {
+    font-size: 0.85rem;
+}

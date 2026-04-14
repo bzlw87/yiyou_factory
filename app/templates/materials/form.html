@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if record else '新增' }}原料入库{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8"><div class="card shadow-sm">
+    <div class="card-header"><h5 class="mb-0"><i class="bi bi-box-seam"></i> {{ '编辑' if record else '新增' }}原料入库</h5></div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">收货日期 <span class="text-danger">*</span></label>
+                    <input type="date" name="receive_date" class="form-control" required value="{{ record.receive_date if record else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">客户 <span class="text-danger">*</span></label>
+                    <input type="text" name="customer_name" id="customerInput" class="form-control" list="customerList" required placeholder="选择或输入新客户" value="{{ record.customer.name if record and record.customer else '' }}" onchange="loadProductions()">
+                    <datalist id="customerList">
+                        {% for c in customers %}<option value="{{ c.name }}">{% endfor %}
+                    </datalist>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">关联缸次（可后补）</label>
+                    <select name="production_id" id="productionSelect" class="form-select">
+                        <option value="">-- 暂不关联 --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">织数 <span class="text-danger">*</span></label>
+                    <input type="text" name="yarn_count" class="form-control" required value="{{ record.yarn_count if record else '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">品种</label>
+                    <input type="text" name="variety_name" class="form-control" list="varietyList" placeholder="选择或输入" value="{{ record.variety.name if record and record.variety else '' }}">
+                    <datalist id="varietyList">
+                        {% for v in varieties %}<option value="{{ v.name }}">{% endfor %}
+                    </datalist>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">件数 <span class="text-danger">*</span></label>
+                    <input type="number" name="quantity" class="form-control" required value="{{ record.quantity if record else '' }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">单件重量(kg) <span class="text-danger">*</span></label>
+                    <input type="text" name="unit_weight" class="form-control" required value="{{ record.unit_weight if record else '' }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">总重量(t)</label>
+                    <input type="text" name="total_weight" class="form-control" value="{{ record.total_weight if record else '' }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">备注</label>
+                    <textarea name="remark" class="form-control" rows="2">{{ record.remark if record else '' }}</textarea>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+                <a href="{{ url_for('materials.index') }}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div></div></div>
+{% endblock %}
+{% block extra_js %}
+<script>
+var currentProductionId = {{ record.production_id|tojson if record and record.production_id else 'null' }};
+
+function loadProductions() {
+    var customerName = document.getElementById('customerInput').value.trim();
+    var sel = document.getElementById('productionSelect');
+
+    if (!customerName) {
+        sel.innerHTML = '<option value="">-- 先选客户 --</option>';
+        return;
+    }
+
+    fetch('{{ url_for("materials.api_productions_by_customer") }}?customer_name=' + encodeURIComponent(customerName))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var html = '<option value="">-- 暂不关联 --</option>';
+            data.forEach(function(item) {
+                var selected = (currentProductionId && currentProductionId == item.id) ? ' selected' : '';
+                html += '<option value="' + item.id + '"' + selected + '>' + item.vat_number + '</option>';
+            });
+            sel.innerHTML = html;
+        })
+        .catch(function() {
+            sel.innerHTML = '<option value="">加载失败</option>';
+        });
+}
+
+if (document.getElementById('customerInput').value) {
+    loadProductions();
+}
+</script>
+{% endblock %}

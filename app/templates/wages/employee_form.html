@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if employee else '新增' }}员工{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-6"><div class="card shadow-sm">
+    <div class="card-header"><h5 class="mb-0"><i class="bi bi-person"></i> {{ '编辑' if employee else '新增' }}员工</h5></div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3"><label class="form-label">姓名 <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control" required value="{{ employee.name if employee else '' }}"></div>
+            <div class="mb-3"><label class="form-label">岗位 <span class="text-danger">*</span></label>
+                <input type="text" name="position" class="form-control" list="posList" required placeholder="如：浆染、拉经、食料" value="{{ employee.position if employee else '' }}">
+                <datalist id="posList"><option value="浆染"><option value="拉经"><option value="食料"></datalist></div>
+            <div class="mb-3"><label class="form-label">基本月薪（计件岗位留空）</label>
+                <input type="number" step="0.01" name="base_salary" class="form-control" value="{{ employee.base_salary if employee and employee.base_salary else '' }}"></div>
+            <div class="mb-3"><label class="form-label">年房租补贴</label>
+                <input type="number" step="0.01" name="rent_subsidy" class="form-control" value="{{ employee.rent_subsidy if employee and employee.rent_subsidy else 0 }}"></div>
+            {% if employee %}
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="is_active" class="form-check-input" id="activeCheck" {% if employee.is_active %}checked{% endif %}>
+                <label class="form-check-label" for="activeCheck">在职</label>
+            </div>
+            {% endif %}
+            <div class="mb-3"><label class="form-label">备注</label>
+                <textarea name="remark" class="form-control" rows="2">{{ employee.remark if employee else '' }}</textarea></div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+            <a href="{{ url_for('wages.employee_list') }}" class="btn btn-secondary">取消</a>
+        </form>
+    </div>
+</div></div></div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}工资管理 - 益友染织{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-wallet2"></i> 工资管理</h4>
+    <div class="d-flex gap-2">
+        <form method="GET" class="d-flex gap-2">
+            <select name="position" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
+                <option value="">全部岗位</option>
+                {% for p in positions %}<option value="{{ p }}" {% if position == p %}selected{% endif %}>{{ p }}</option>{% endfor %}
+            </select>
+        </form>
+        {% if current_user.has_permission('wages', 'edit') %}
+        <a href="{{ url_for('wages.employee_create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增员工</a>
+        {% endif %}
+    </div>
+</div>
+<div class="card shadow-sm"><div class="card-body p-0"><div class="table-responsive">
+    <table class="table table-hover table-striped mb-0 align-middle">
+        <thead class="table-light"><tr><th>姓名</th><th>岗位</th><th>基本月薪</th><th>房租补贴</th><th>状态</th><th>{{ current_year }}年已发</th><th>操作</th></tr></thead>
+        <tbody>
+        {% for e in employees %}
+        <tr>
+            <td><a href="{{ url_for('wages.wage_detail', emp_id=e.id) }}" class="fw-bold text-decoration-none">{{ e.name }}</a></td>
+            <td><span class="badge bg-info">{{ e.position }}</span></td>
+            <td>{% if e.base_salary %}{{ e.base_salary }}元/月{% else %}计件{% endif %}</td>
+            <td>{% if e.rent_subsidy and e.rent_subsidy > 0 %}{{ e.rent_subsidy }}元/年{% else %}-{% endif %}</td>
+            <td>{% if e.is_active %}<span class="badge bg-success">在职</span>{% else %}<span class="badge bg-secondary">离职</span>{% endif %}</td>
+            <td>{{ e.paid_months }}/{{ e.total_months }}月</td>
+            <td class="text-nowrap">
+                <a href="{{ url_for('wages.wage_detail', emp_id=e.id) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+                {% if current_user.has_permission('wages', 'edit') %}
+                <a href="{{ url_for('wages.employee_edit', id=e.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">暂无员工，请先添加</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div></div></div>
+{% endblock %}

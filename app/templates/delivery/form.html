@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}{{ '编辑' if record else '新增' }}送货单{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-10"><div class="card shadow-sm">
+    <div class="card-header"><h5 class="mb-0"><i class="bi bi-truck"></i> {{ '编辑' if record else '新增' }}送货单</h5></div>
+    <div class="card-body">
+        <form method="POST" id="mainForm">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">送货单号 <span class="text-danger">*</span></label>
+                    <input type="text" name="order_number" class="form-control" required value="{{ record.order_number if record else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">日期 <span class="text-danger">*</span></label>
+                    <input type="date" name="delivery_date" class="form-control" required value="{{ record.delivery_date if record else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">客户 <span class="text-danger">*</span></label>
+                    <input type="text" name="customer_name" id="customerInput" class="form-control" list="customerList" required placeholder="选择或输入新客户" value="{{ record.customer.name if record and record.customer else '' }}">
+                    <datalist id="customerList">
+                        {% for c in customers %}<option value="{{ c.name }}">{% endfor %}
+                    </datalist>
+                </div>
+                <div class="col-md-3"><label class="form-label">缸次</label><input type="text" name="vat_batch" class="form-control" value="{{ record.vat_batch if record else '' }}"></div>
+                <div class="col-md-3"><label class="form-label">板长(m)</label><input type="number" step="0.01" name="board_length" class="form-control" value="{{ record.board_length if record else '' }}"></div>
+                <div class="col-md-3"><label class="form-label">染色长度(m)</label><input type="number" step="0.01" name="dyeing_length" class="form-control" value="{{ record.dyeing_length if record else '' }}"></div>
+                <div class="col-md-3"><label class="form-label">颜色</label><input type="text" name="color" class="form-control" id="colorInput" value="{{ record.color if record else '' }}"></div>
+                <div class="col-md-4"><label class="form-label">来纱品种</label><input type="text" name="yarn_type" class="form-control" id="yarnTypeInput" value="{{ record.yarn_type if record else '' }}"></div>
+                <div class="col-md-2"><label class="form-label">用纱数量</label><input type="text" name="yarn_used" class="form-control" value="{{ record.yarn_used if record else '' }}"></div>
+                <div class="col-md-2"><label class="form-label">余纱数量</label><input type="text" name="yarn_remaining" class="form-control" value="{{ record.yarn_remaining if record else '' }}"></div>
+                <div class="col-md-2"><label class="form-label">费率(元/m)</label><input type="number" step="0.0001" name="rate" class="form-control" id="rateInput" value="{{ record.rate if record else '' }}"></div>
+                <div class="col-md-2"><label class="form-label">费用合计</label><input type="text" class="form-control" readonly value="{{ record.total_cost if record else '自动计算' }}" tabindex="-1"></div>
+                <div class="col-12"><label class="form-label">备注</label><textarea name="remark" class="form-control" rows="2">{{ record.remark if record else '' }}</textarea></div>
+            </div>
+            <hr>
+            <h6>缸号明细 <button type="button" class="btn btn-sm btn-outline-success ms-2" onclick="addDetail()"><i class="bi bi-plus"></i> 添加缸号</button></h6>
+            <div class="table-responsive"><table class="table table-sm" id="detailTable">
+                <thead><tr><th>缸号 <span class="text-danger">*</span></th><th>米数</th><th>备注</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table></div>
+            <input type="hidden" name="details_json" id="detailsJson">
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> 保存</button>
+                <a href="{{ url_for('delivery.index') }}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div></div></div>
+{% endblock %}
+{% block extra_js %}
+<script>
+var detailsData = {{ details | tojson }};
+function renderDetails() {
+    var tbody = document.querySelector('#detailTable tbody');
+    tbody.innerHTML = '';
+    detailsData.forEach(function(item, i) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td><input type="text" class="form-control form-control-sm" value="' + (item.vat_number||'') + '" onchange="detailsData['+i+'].vat_number=this.value" required></td>'
+            + '<td><input type="number" step="0.01" class="form-control form-control-sm" value="' + (item.length||'') + '" onchange="detailsData['+i+'].length=this.value"></td>'
+            + '<td><input type="text" class="form-control form-control-sm" value="' + (item.remark||'') + '" onchange="detailsData['+i+'].remark=this.value"></td>'
+            + '<td><button type="button" class="btn btn-sm btn-outline-danger" onclick="detailsData.splice('+i+',1);renderDetails()"><i class="bi bi-x"></i></button></td>';
+        tbody.appendChild(tr);
+    });
+}
+function addDetail() { detailsData.push({vat_number:'',length:'',remark:''}); renderDetails(); }
+document.getElementById('mainForm').addEventListener('submit', function() {
+    document.getElementById('detailsJson').value = JSON.stringify(detailsData);
+});
+renderDetails();
+
+// 费率自动带入：客户+来纱品种+颜色变化时查询历史费率
+function tryMatchRate() {
+    var customerName = document.getElementById('customerInput').value.trim();
+    var yarnType = document.getElementById('yarnTypeInput').value.trim();
+    var color = document.getElementById('colorInput').value.trim();
+    if (!customerName) return;
+    fetch('{{ url_for("delivery.match_rate") }}?customer_name=' + encodeURIComponent(customerName) + '&yarn_type=' + encodeURIComponent(yarnType) + '&color=' + encodeURIComponent(color))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.rate) {
+                var rateInput = document.getElementById('rateInput');
+                if (!rateInput.value) {
+                    rateInput.value = data.rate;
+                    rateInput.style.backgroundColor = '#d1ecf1';
+                    setTimeout(function() { rateInput.style.backgroundColor = ''; }, 2000);
+                }
+            }
+        })
+        .catch(function() {});
+}
+document.getElementById('customerInput').addEventListener('change', tryMatchRate);
+document.getElementById('yarnTypeInput').addEventListener('change', tryMatchRate);
+document.getElementById('colorInput').addEventListener('change', tryMatchRate);
+</script>
+{% endblock %}

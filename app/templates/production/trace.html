@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}全流程追溯 - 益友染织{% endblock %}
+{% block content %}
+<h4 class="mb-3"><i class="bi bi-diagram-3"></i> 全流程追溯</h4>
+<div class="card shadow-sm mb-3"><div class="card-body py-2">
+    <form method="GET" class="row g-2 align-items-end">
+        <div class="col-8 col-md-4">
+            <input type="text" name="vat" class="form-control" placeholder="输入缸次号查询" value="{{ vat }}">
+        </div>
+        <div class="col-4 col-md-2">
+            <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> 追溯</button>
+        </div>
+    </form>
+</div></div>
+
+{% if result %}
+<div class="row g-3">
+    {# 1. 客户工艺 #}
+    <div class="col-12">
+        <div class="card shadow-sm border-primary">
+            <div class="card-header bg-primary text-white"><h6 class="mb-0"><i class="bi bi-gear"></i> 客户工艺</h6></div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-2"><strong>缸次号：</strong>{{ result.order.vat_number }}</div>
+                    <div class="col-md-2"><strong>客户：</strong>{{ result.order.customer.name }}</div>
+                    <div class="col-md-2"><strong>织数：</strong>{{ result.order.yarn_count or '-' }}</div>
+                    <div class="col-md-2"><strong>品种：</strong>{{ result.order.variety.name if result.order.variety else '-' }}</div>
+                    <div class="col-md-2"><strong>总经根数：</strong>{{ result.order.total_ends or '-' }}</div>
+                    <div class="col-md-2"><strong>颜色：</strong>{{ result.order.color or '-' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# 2. 原料入库 #}
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><h6 class="mb-0"><i class="bi bi-box-seam"></i> 原料入库 <span class="badge bg-secondary">{{ result.materials|length }}</span></h6></div>
+            <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0">
+                <thead><tr><th>日期</th><th>织数</th><th>件数</th><th>单件重量</th><th>总重量</th></tr></thead>
+                <tbody>
+                {% for m in result.materials %}
+                <tr><td>{{ m.receive_date }}</td><td>{{ m.yarn_count }}</td><td>{{ m.quantity }}</td><td>{{ m.unit_weight }}</td><td>{{ m.total_weight or '' }}</td></tr>
+                {% else %}
+                <tr><td colspan="5" class="text-muted text-center">无关联入库记录</td></tr>
+                {% endfor %}
+                </tbody>
+            </table></div></div>
+        </div>
+    </div>
+
+    {# 3. 用纱核算 #}
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header"><h6 class="mb-0"><i class="bi bi-calculator"></i> 用纱核算</h6></div>
+            <div class="card-body">
+                {% if result.consumption %}
+                <div class="row mb-2">
+                    <div class="col-6"><strong>板长：</strong>{{ result.consumption.board_length or '-' }}m</div>
+                    <div class="col-6"><strong>浆长：</strong>{{ result.consumption.sizing_length or '-' }}m</div>
+                </div>
+                <table class="table table-sm mb-0">
+                    <tbody>
+                        {% if result.consumption.incoming_source %}<tr><td class="text-muted" style="width:100px">来纱来源</td><td><strong class="text-primary">{{ result.consumption.incoming_source }}</strong></td></tr>{% endif %}
+                        <tr><td class="text-muted" style="width:100px">来纱织数</td><td>{{ result.consumption.incoming_yarn_count or '-' }}</td></tr>
+                        <tr><td class="text-muted">来纱品种</td><td>{{ result.consumption.incoming_variety or '-' }}</td></tr>
+                        <tr><td class="text-muted">来纱重量</td><td><strong>{{ result.consumption.incoming_weight or '-' }}</strong></td></tr>
+                        <tr class="table-success"><td class="text-muted">本次用量</td><td><strong>{{ result.consumption.usage_weight or '-' }}</strong></td></tr>
+                        <tr class="table-warning"><td class="text-muted">余下织数</td><td>{{ result.consumption.remaining_yarn_count or '-' }}</td></tr>
+                        <tr class="table-warning"><td class="text-muted">余下品种</td><td>{{ result.consumption.remaining_variety or '-' }}</td></tr>
+                        <tr class="table-warning"><td class="text-muted">余下重量</td><td><strong>{{ result.consumption.remaining_weight or '-' }}</strong></td></tr>
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted mb-0">无核算记录</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# 5. 送货记录 #}
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header"><h6 class="mb-0"><i class="bi bi-truck"></i> 送货记录 <span class="badge bg-secondary">{{ result.deliveries|length }}</span></h6></div>
+            <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0">
+                <thead><tr><th>日期</th><th>单号</th><th>客户</th><th>板长</th><th>颜色</th><th>费率</th><th class="text-end">费用</th></tr></thead>
+                <tbody>
+                {% for d in result.deliveries %}
+                <tr><td>{{ d.delivery_date }}</td><td>{{ d.order_number }}</td><td>{{ d.customer.name }}</td><td>{{ d.board_length or '' }}</td><td>{{ d.color or '' }}</td><td>{{ d.rate or '' }}</td><td class="text-end">{{ d.total_cost or '' }}</td></tr>
+                {% else %}
+                <tr><td colspan="7" class="text-muted text-center">无送货记录</td></tr>
+                {% endfor %}
+                </tbody>
+            </table></div></div>
+        </div>
+    </div>
+</div>
+{% elif vat %}
+<div class="alert alert-warning">未找到缸次号 "{{ vat }}" 的任何记录。请检查输入是否正确。</div>
+{% else %}
+<div class="text-center text-muted py-5"><i class="bi bi-search" style="font-size:3rem"></i><p class="mt-2">输入缸次号开始追溯</p></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs wc:*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(xargs grep:*)",
+      "Bash(ls:*)",
+      "Bash(curl -fsSL \"https://cdn.npmmirror.com/packages/bootstrap/5.3.0/files/dist/css/bootstrap.min.css\" -o css/bootstrap.min.css)",
+      "Bash(curl -fsSLk \"https://cdn.npmmirror.com/packages/bootstrap/5.3.0/files/dist/css/bootstrap.min.css\" -o css/bootstrap.min.css)",
+      "Bash(curl -fsSLk \"https://cdn.npmmirror.com/packages/bootstrap/5.3.0/files/dist/js/bootstrap.bundle.min.js\" -o js/bootstrap.bundle.min.js)",
+      "Bash(curl -fsSLk \"https://cdn.npmmirror.com/packages/bootstrap-icons/1.11.0/files/font/bootstrap-icons.css\" -o css/bootstrap-icons.css)",
+      "Bash(curl -fsSLk \"https://cdn.npmmirror.com/packages/bootstrap-icons/1.11.0/files/font/fonts/bootstrap-icons.woff2\" -o css/fonts/bootstrap-icons.woff2)",
+      "Bash(curl -fsSLk \"https://cdn.npmmirror.com/packages/bootstrap-icons/1.11.0/files/font/fonts/bootstrap-icons.woff\" -o css/fonts/bootstrap-icons.woff)",
+      "Bash(curl -fsSLk \"https://cdn.npmmirror.com/packages/flatpickr/4.6.13/files/dist/flatpickr.min.css\" -o C:/Users/14402/Desktop/yiyou_factory/app/static/css/flatpickr.min.css)",
+      "Bash(curl -fsSLk \"https://cdn.npmmirror.com/packages/flatpickr/4.6.13/files/dist/flatpickr.min.js\" -o C:/Users/14402/Desktop/yiyou_factory/app/static/js/flatpickr.min.js)",
+      "Bash(curl -fsSLk \"https://cdn.npmmirror.com/packages/flatpickr/4.6.13/files/dist/l10n/zh.js\" -o C:/Users/14402/Desktop/yiyou_factory/app/static/js/flatpickr.zh.js)",
+      "Bash(find C:/Users/14402/Desktop/yiyou_factory/app -name *.py)",
+      "Bash(grep -n \"migrate\\\\|create_all\\\\|Migrate\" C:/Users/14402/Desktop/yiyou_factory/app/__init__.py C:/Users/14402/Desktop/yiyou_factory/*.py)",
+      "Bash(flask db:*)"
+    ]
+  }
+}

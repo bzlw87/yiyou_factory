@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "includes/pagination.html" import render_pagination %}
+{% block title %}余纱流转 - 益友染织{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-arrow-left-right"></i> 余纱流转</h4>
+    {% if current_user.has_permission('consumption', 'edit') %}
+    <a href="{{ url_for('consumption.transfer_create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增流转</a>
+    {% endif %}
+</div>
+<div class="card shadow-sm"><div class="card-body p-0"><div class="table-responsive">
+    <table class="table table-hover table-striped mb-0 align-middle">
+        <thead class="table-light"><tr><th>客户</th><th>来源缸次</th><th class="text-center"><i class="bi bi-arrow-right"></i></th><th>去向缸次</th><th>数量</th><th>单位</th><th>备注</th><th>时间</th><th>操作</th></tr></thead>
+        <tbody>
+        {% for t in transfers %}
+        <tr>
+            <td>{{ t.from_consumption.production_order.customer.name }}</td>
+            <td><strong>{{ t.from_consumption.production_order.vat_number }}</strong></td>
+            <td class="text-center text-muted"><i class="bi bi-arrow-right"></i></td>
+            <td><strong>{{ t.to_consumption.production_order.vat_number }}</strong></td>
+            <td>{{ t.amount }}</td>
+            <td>{{ t.unit or '' }}</td>
+            <td><small class="text-muted">{{ t.remark or '' }}</small></td>
+            <td><small class="text-muted">{{ t.created_at.strftime('%Y-%m-%d') if t.created_at else '' }}</small></td>
+            <td>
+                {% if current_user.has_permission('consumption', 'edit') %}
+                <form method="POST" action="{{ url_for('consumption.transfer_delete', id=t.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')">
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="text-center text-muted py-4">暂无流转记录</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div></div></div>
+{{ render_pagination(pagination, 'consumption.transfer_list') }}
+{% endblock %}

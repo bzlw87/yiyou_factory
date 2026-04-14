@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}查看整经记录{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-diagram-3"></i> 整经记录详情</h5>
+        <a href="{{ url_for('warping.index') }}" class="btn btn-sm btn-secondary">返回列表</a>
+    </div>
+    <div class="card-body">
+        <div class="row g-2 mb-3">
+            <div class="col-md-3"><strong>日期：</strong>{{ record.board_date.strftime('%Y-%m-%d') }}</div>
+            <div class="col-md-3"><strong>客户：</strong>{{ record.customer_name }}</div>
+            <div class="col-md-3"><strong>经车号：</strong>{{ record.loom_number or '-' }}</div>
+            <div class="col-md-3"><strong>车次：</strong>{{ record.loom_batch or '-' }}</div>
+            <div class="col-md-2"><strong>品种：</strong>{{ record.yarn_type or '-' }}</div>
+            <div class="col-md-2"><strong>纱支：</strong>{{ record.yarn_count or '-' }}</div>
+            <div class="col-md-2"><strong>总经份：</strong>{{ record.total_ends or '-' }}</div>
+            <div class="col-md-2"><strong>轴数：</strong>{{ record.total_beams or '-' }}</div>
+            <div class="col-md-2"><strong>板长：</strong>{{ record.board_length or '-' }}m</div>
+            <div class="col-md-2"><strong>工资合计：</strong><span class="text-danger fw-bold">¥{{ record.total_wage or 0 }}</span></div>
+        </div>
+        <h6 class="text-primary">轴次明细</h6>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light"><tr><th>轴次</th><th>头份</th><th>长度(m)</th><th>轴号</th><th>班别</th><th>值车工</th><th>工资小计</th><th>备注</th></tr></thead>
+                <tbody>
+                {% for d in details %}
+                <tr><td>{{ d.beam_order }}</td><td>{{ d.head_count or '' }}</td><td>{{ d.length or '' }}</td><td>{{ d.beam_number or '' }}</td><td>{{ d.shift or '' }}</td><td>{{ d.operator or '' }}</td><td class="text-danger">¥{{ d.wage_subtotal or 0 }}</td><td>{{ d.remark or '' }}</td></tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted">无明细</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% if logs %}
+<div class="card shadow-sm mt-3">
+    <div class="card-header"><h6 class="mb-0"><i class="bi bi-clock-history"></i> 修改历史</h6></div>
+    <div class="card-body p-0">
+        <table class="table table-sm mb-0 align-middle">
+            <thead class="table-light"><tr><th>时间</th><th>操作人</th><th>操作</th><th>变更内容</th></tr></thead>
+            <tbody>
+            {% for log in logs %}
+            <tr>
+                <td class="text-nowrap">{{ log.operated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ log.user.display_name }}</td>
+                <td>
+                    {% if log.action == '新增' %}<span class="badge bg-success">新增</span>
+                    {% elif log.action == '编辑' %}<span class="badge bg-primary">编辑</span>
+                    {% else %}<span class="badge bg-danger">删除</span>{% endif %}
+                </td>
+                <td><small>
+                    {% if log.diffs %}
+                        {% for d in log.diffs %}
+                            <span class="text-muted">{{ d.field }}：</span><span class="text-danger">{{ d.old if d.old is not none else '-' }}</span> → <span class="text-success">{{ d.new if d.new is not none else '-' }}</span>{% if not loop.last %}；{% endif %}
+                        {% endfor %}
+                    {% elif log.action == '新增' %}已创建
+                    {% endif %}
+                </small></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

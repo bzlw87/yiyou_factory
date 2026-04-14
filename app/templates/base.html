@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}益友染织管理系统{% endblock %}</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/bootstrap-icons.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/flatpickr.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="{{ url_for('dashboard.index') }}">
+                <i class="bi bi-building"></i> 益友染织
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                {% if current_user.is_authenticated %}
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('dashboard') %}active{% endif %}"
+                           href="{{ url_for('dashboard.index') }}"><i class="bi bi-speedometer2"></i> 首页</a>
+                    </li>
+                    {% if current_user.has_permission('materials', 'view') %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('materials') %}active{% endif %}"
+                           href="{{ url_for('materials.index') }}"><i class="bi bi-box-seam"></i> 原料入库</a>
+                    </li>
+                    {% endif %}
+                    {% if current_user.has_permission('production', 'view') %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('production') %}active{% endif %}"
+                           href="{{ url_for('production.index') }}"><i class="bi bi-gear"></i> 客户工艺</a>
+                    </li>
+                    {% endif %}
+                    {% if current_user.has_permission('consumption', 'view') %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('consumption') %}active{% endif %}"
+                           href="{{ url_for('consumption.index') }}"><i class="bi bi-calculator"></i> 用纱核算</a>
+                    </li>
+                    {% endif %}
+                    {% if current_user.has_permission('production', 'view') %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'production.trace' %}active{% endif %}"
+                           href="{{ url_for('production.trace') }}"><i class="bi bi-diagram-3"></i> 追溯</a>
+                    </li>
+                    {% endif %}
+                    {% if current_user.has_permission('delivery', 'view') %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('delivery') %}active{% endif %}"
+                           href="{{ url_for('delivery.index') }}"><i class="bi bi-truck"></i> 送货记录</a>
+                    </li>
+                    {% endif %}
+                    {% if current_user.has_permission('finance', 'view') %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint and request.endpoint.startswith('finance') %}active{% endif %}"
+                           href="#" data-bs-toggle="dropdown"><i class="bi bi-cash-coin"></i> 财务管理</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('finance.receivables') }}"><i class="bi bi-arrow-down-circle"></i> 应收账款</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('finance.payables') }}"><i class="bi bi-arrow-up-circle"></i> 应付账款</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('finance.purchase_list') }}"><i class="bi bi-bag"></i> 原材料采购</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('finance.summary') }}"><i class="bi bi-bar-chart"></i> 账目总结</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                    {% if current_user.has_permission('wages', 'view') %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint and request.endpoint.startswith('wages') %}active{% endif %}"
+                           href="{{ url_for('wages.employee_list') }}"><i class="bi bi-wallet2"></i> 工资管理</a>
+                    </li>
+                    {% endif %}
+                    {% if current_user.is_admin %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint and request.endpoint.startswith('admin') %}active{% endif %}"
+                           href="#" data-bs-toggle="dropdown"><i class="bi bi-shield-lock"></i> 系统管理</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('admin.user_list') }}"><i class="bi bi-people"></i> 用户管理</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.customer_list') }}"><i class="bi bi-person-rolodex"></i> 客户管理</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.supplier_list') }}"><i class="bi bi-shop"></i> 供应商管理</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.variety_list') }}"><i class="bi bi-tags"></i> 品种管理</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.material_type_list') }}"><i class="bi bi-palette"></i> 原材料品种</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.wage_rate_list') }}"><i class="bi bi-cash-stack"></i> 工资费率</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.operation_log_list') }}"><i class="bi bi-journal-text"></i> 操作日志</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> {{ current_user.display_name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><span class="dropdown-item-text text-muted small">角色：{{ '管理员' if current_user.is_admin else '员工' }}</span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}"><i class="bi bi-key"></i> 修改密码</a></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right"></i> 退出登录</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    <main class="container-fluid py-3 px-3 px-lg-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+    <footer class="bg-light text-center text-muted py-3 mt-4 border-top">
+        <small>&copy; 2026 常州市益友染织有限公司 生产管理系统</small>
+    </footer>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flatpickr.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flatpickr.zh.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+    (function() {
+        var today = new Date().toLocaleDateString('sv-SE');
+        document.querySelectorAll('form[method="POST"] input[type="date"], form[method="post"] input[type="date"]').forEach(function(el) {
+            if (!el.value) el.value = today;
+        });
+        flatpickr.localize(flatpickr.l10ns.zh);
+        document.querySelectorAll('input[type="date"]').forEach(function(el) {
+            flatpickr(el, { dateFormat: 'Y-m-d', allowInput: true, disableMobile: true });
+        });
+    })();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

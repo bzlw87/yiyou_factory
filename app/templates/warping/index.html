@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "includes/pagination.html" import render_pagination %}
+{% block title %}整经记录 - 益友染织{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-diagram-3"></i> 整经记录（含工资计算）</h4>
+    {% if current_user.has_permission('warping', 'edit') %}
+    <a href="{{ url_for('warping.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增记录</a>
+    {% endif %}
+</div>
+<div class="card shadow-sm mb-3">
+    <div class="card-body py-2">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-6 col-md-3">
+                <input type="text" name="keyword" class="form-control form-control-sm" placeholder="客户名称" value="{{ keyword }}">
+            </div>
+            <div class="col-6 col-md-2">
+                <input type="text" name="year" class="form-control form-control-sm" placeholder="年份" value="{{ year }}">
+            </div>
+            <div class="col-12 col-md-3">
+                <button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-search"></i> 搜索</button>
+                <a href="{{ url_for('warping.index') }}" class="btn btn-outline-secondary btn-sm">重置</a>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 align-middle">
+                <thead class="table-light">
+                    <tr><th>日期</th><th>客户</th><th>经车号</th><th>品种</th><th>纱支</th><th>总经份</th><th>轴数</th><th>板长(m)</th><th>工资合计</th><th>操作</th></tr>
+                </thead>
+                <tbody>
+                {% for r in records %}
+                <tr>
+                    <td class="text-nowrap">{{ r.board_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ r.customer_name }}</td>
+                    <td>{{ r.loom_number or '' }}</td>
+                    <td>{{ r.yarn_type or '' }}</td>
+                    <td>{{ r.yarn_count or '' }}</td>
+                    <td>{{ r.total_ends or '' }}</td>
+                    <td>{{ r.total_beams or '' }}</td>
+                    <td>{{ r.board_length or '' }}</td>
+                    <td><strong class="text-danger">¥{{ r.total_wage or 0 }}</strong></td>
+                    <td class="text-nowrap">
+                        <a href="{{ url_for('warping.view_record', id=r.id) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+                        {% if current_user.has_permission('warping', 'edit') %}
+                        <a href="{{ url_for('warping.edit', id=r.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                        <form method="POST" action="{{ url_for('warping.delete', id=r.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')">
+                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="10" class="text-center text-muted py-4">暂无记录</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{ render_pagination(pagination, 'warping.index') }}
+{% endblock %}
