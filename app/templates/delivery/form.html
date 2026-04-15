@@ -21,17 +21,17 @@
                         {% for c in customers %}<option value="{{ c.name }}">{% endfor %}
                     </datalist>
                 </div>
-                <div class="col-md-2"><label class="form-label">缸次</label><input type="text" name="vat_batch" class="form-control" value="{{ record.vat_batch if record else '' }}"></div>
-                <div class="col-md-2"><label class="form-label">织数</label><input type="text" name="yarn_count" class="form-control" value="{{ record.yarn_count if record else '' }}"></div>
-                <div class="col-md-2"><label class="form-label">板长(m)</label><input type="number" step="0.01" name="board_length" class="form-control" value="{{ record.board_length if record else '' }}"></div>
+                <div class="col-md-3"><label class="form-label">缸次</label><input type="text" name="vat_batch" class="form-control" value="{{ record.vat_batch if record else '' }}"></div>
+                <div class="col-md-3"><label class="form-label">板长(m)</label><input type="number" step="0.01" name="board_length" class="form-control" value="{{ record.board_length if record else '' }}"></div>
                 <div class="col-md-3"><label class="form-label">染色长度(m)</label><input type="number" step="0.01" name="dyeing_length" class="form-control" value="{{ record.dyeing_length if record else '' }}"></div>
                 <div class="col-md-3"><label class="form-label">颜色</label><input type="text" name="color" class="form-control" id="colorInput" value="{{ record.color if record else '' }}"></div>
-                <div class="col-md-3"><label class="form-label">来纱品种</label><input type="text" name="yarn_type" class="form-control" id="yarnTypeInput" value="{{ record.yarn_type if record else '' }}"></div>
+                <div class="col-md-2"><label class="form-label">来纱品种</label><input type="text" name="yarn_type" class="form-control" id="yarnTypeInput" value="{{ record.yarn_type if record else '' }}"></div>
+                <div class="col-md-2"><label class="form-label">织数</label><input type="text" name="yarn_count" class="form-control" value="{{ record.yarn_count if record else '' }}"></div>
                 <div class="col-md-2"><label class="form-label">来纱数量</label><input type="text" name="incoming_yarn" class="form-control" value="{{ record.incoming_yarn if record else '' }}"></div>
                 <div class="col-md-2"><label class="form-label">用纱数量</label><input type="text" name="yarn_used" class="form-control" value="{{ record.yarn_used if record else '' }}"></div>
                 <div class="col-md-2"><label class="form-label">余纱数量</label><input type="text" name="yarn_remaining" class="form-control" value="{{ record.yarn_remaining if record else '' }}"></div>
-                <div class="col-md-2"><label class="form-label">费率(元/m)</label><input type="number" step="0.0001" name="rate" class="form-control" id="rateInput" value="{{ record.rate if record else '' }}"></div>
-                <div class="col-md-2"><label class="form-label">费用合计</label><input type="text" class="form-control" readonly value="{{ record.total_cost if record else '自动计算' }}" tabindex="-1"></div>
+                <div class="col-md-1"><label class="form-label">费率</label><input type="number" step="0.0001" name="rate" class="form-control" id="rateInput" value="{{ record.rate if record else '' }}"></div>
+                <div class="col-md-1"><label class="form-label">费用</label><input type="text" class="form-control" readonly value="{{ record.total_cost if record else '自动' }}" tabindex="-1"></div>
                 <div class="col-12"><label class="form-label">备注</label><textarea name="remark" class="form-control" rows="2">{{ record.remark if record else '' }}</textarea></div>
             </div>
             <hr>
