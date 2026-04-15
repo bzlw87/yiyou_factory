@@ -14,6 +14,7 @@
   系统：operation_logs
 """
 
+from decimal import Decimal
 from datetime import datetime, date, timezone, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
@@ -270,7 +271,7 @@ class DeliveryOrder(db.Model):
 
     def calculate_total_cost(self):
         if self.dyeing_length and self.rate:
-            self.total_cost = round(float(self.dyeing_length) * float(self.rate), 2)
+            self.total_cost = round(Decimal(self.dyeing_length) * Decimal(self.rate), 2)
 
 
 class DeliveryDetail(db.Model):
@@ -346,7 +347,7 @@ class RawMaterialPurchase(db.Model):
 
     def calculate_total(self):
         if self.weight_tons and self.unit_price:
-            self.total_amount = round(float(self.weight_tons) * float(self.unit_price), 2)
+            self.total_amount = round(Decimal(self.weight_tons) * Decimal(self.unit_price), 2)
 
 
 class PaymentMade(db.Model):

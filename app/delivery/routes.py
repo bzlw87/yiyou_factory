@@ -2,6 +2,7 @@
 送货记录路由 - 含费率自动带入和缸号明细
 """
 import json
+from decimal import Decimal
 from datetime import datetime
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required
@@ -85,14 +86,14 @@ def create():
                 customer_id=resolve_customer(request.form.get('customer_name', '')),
                 vat_batch=request.form.get('vat_batch', '').strip(),
                 yarn_count=request.form.get('yarn_count', '').strip(),
-                board_length=float(request.form['board_length']) if request.form.get('board_length') else None,
-                dyeing_length=float(request.form['dyeing_length']) if request.form.get('dyeing_length') else None,
+                board_length=Decimal(request.form['board_length']) if request.form.get('board_length') else None,
+                dyeing_length=Decimal(request.form['dyeing_length']) if request.form.get('dyeing_length') else None,
                 color=request.form.get('color', '').strip(),
                 yarn_type=request.form.get('yarn_type', '').strip(),
                 incoming_yarn=request.form.get('incoming_yarn', '').strip(),
                 yarn_used=request.form.get('yarn_used', '').strip(),
                 yarn_remaining=request.form.get('yarn_remaining', '').strip(),
-                rate=float(request.form['rate']) if request.form.get('rate') else None,
+                rate=Decimal(request.form['rate']) if request.form.get('rate') else None,
                 remark=request.form.get('remark', '').strip()
             )
             record.calculate_total_cost()
@@ -114,7 +115,7 @@ def create():
                 detail = DeliveryDetail(
                     delivery_id=record.id,
                     vat_number=item['vat_number'],
-                    length=float(item['length']) if item.get('length') else None,
+                    length=Decimal(item['length']) if item.get('length') else None,
                     remark=item.get('remark', '')
                 )
                 db.session.add(detail)
@@ -146,14 +147,14 @@ def edit(id):
             record.customer_id = resolve_customer(request.form.get('customer_name', ''))
             record.vat_batch = request.form.get('vat_batch', '').strip()
             record.yarn_count = request.form.get('yarn_count', '').strip()
-            record.board_length = float(request.form['board_length']) if request.form.get('board_length') else None
-            record.dyeing_length = float(request.form['dyeing_length']) if request.form.get('dyeing_length') else None
+            record.board_length = Decimal(request.form['board_length']) if request.form.get('board_length') else None
+            record.dyeing_length = Decimal(request.form['dyeing_length']) if request.form.get('dyeing_length') else None
             record.color = request.form.get('color', '').strip()
             record.yarn_type = request.form.get('yarn_type', '').strip()
             record.incoming_yarn = request.form.get('incoming_yarn', '').strip()
             record.yarn_used = request.form.get('yarn_used', '').strip()
             record.yarn_remaining = request.form.get('yarn_remaining', '').strip()
-            record.rate = float(request.form['rate']) if request.form.get('rate') else None
+            record.rate = Decimal(request.form['rate']) if request.form.get('rate') else None
             record.remark = request.form.get('remark', '').strip()
             record.calculate_total_cost()
 
@@ -173,7 +174,7 @@ def edit(id):
                 detail = DeliveryDetail(
                     delivery_id=record.id,
                     vat_number=item['vat_number'],
-                    length=float(item['length']) if item.get('length') else None,
+                    length=Decimal(item['length']) if item.get('length') else None,
                     remark=item.get('remark', '')
                 )
                 db.session.add(detail)

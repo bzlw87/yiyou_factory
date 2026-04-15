@@ -1,6 +1,7 @@
 """
 工资模块 - 统一的员工工资管理，对齐纸质账本
 """
+from decimal import Decimal
 from datetime import date
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required
@@ -56,8 +57,8 @@ def employee_create():
             emp = Employee(
                 name=request.form['name'].strip(),
                 position=request.form['position'].strip(),
-                base_salary=float(request.form['base_salary']) if request.form.get('base_salary') else None,
-                rent_subsidy=float(request.form['rent_subsidy']) if request.form.get('rent_subsidy') else 0,
+                base_salary=Decimal(request.form['base_salary']) if request.form.get('base_salary') else None,
+                rent_subsidy=Decimal(request.form['rent_subsidy']) if request.form.get('rent_subsidy') else 0,
                 remark=request.form.get('remark', '').strip()
             )
             db.session.add(emp)
@@ -80,8 +81,8 @@ def employee_edit(id):
         try:
             emp.name = request.form['name'].strip()
             emp.position = request.form['position'].strip()
-            emp.base_salary = float(request.form['base_salary']) if request.form.get('base_salary') else None
-            emp.rent_subsidy = float(request.form['rent_subsidy']) if request.form.get('rent_subsidy') else 0
+            emp.base_salary = Decimal(request.form['base_salary']) if request.form.get('base_salary') else None
+            emp.rent_subsidy = Decimal(request.form['rent_subsidy']) if request.form.get('rent_subsidy') else 0
             emp.is_active = 'is_active' in request.form
             emp.remark = request.form.get('remark', '').strip()
             db.session.commit()
@@ -136,10 +137,10 @@ def record_create(emp_id):
                 employee_id=emp_id,
                 year=int(request.form['year']),
                 month=int(request.form['month']),
-                gross_wage=float(request.form['gross_wage']) if request.form.get('gross_wage') else None,
+                gross_wage=Decimal(request.form['gross_wage']) if request.form.get('gross_wage') else None,
                 rest_days=int(request.form['rest_days']) if request.form.get('rest_days') else None,
-                deduction=float(request.form['deduction']) if request.form.get('deduction') else 0,
-                net_wage=float(request.form['net_wage']) if request.form.get('net_wage') else None,
+                deduction=Decimal(request.form['deduction']) if request.form.get('deduction') else 0,
+                net_wage=Decimal(request.form['net_wage']) if request.form.get('net_wage') else None,
                 is_paid='is_paid' in request.form,
                 paid_date=request.form['paid_date'] if request.form.get('paid_date') else None,
                 remark=request.form.get('remark', '').strip()
@@ -170,10 +171,10 @@ def record_edit(id):
             before = record_to_dict(r)
             r.year = int(request.form['year'])
             r.month = int(request.form['month'])
-            r.gross_wage = float(request.form['gross_wage']) if request.form.get('gross_wage') else None
+            r.gross_wage = Decimal(request.form['gross_wage']) if request.form.get('gross_wage') else None
             r.rest_days = int(request.form['rest_days']) if request.form.get('rest_days') else None
-            r.deduction = float(request.form['deduction']) if request.form.get('deduction') else 0
-            r.net_wage = float(request.form['net_wage']) if request.form.get('net_wage') else None
+            r.deduction = Decimal(request.form['deduction']) if request.form.get('deduction') else 0
+            r.net_wage = Decimal(request.form['net_wage']) if request.form.get('net_wage') else None
             r.is_paid = 'is_paid' in request.form
             r.paid_date = request.form['paid_date'] if request.form.get('paid_date') else None
             r.remark = request.form.get('remark', '').strip()

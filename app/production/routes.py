@@ -1,6 +1,7 @@
 """
 客户工艺（原生产排单）路由
 """
+from decimal import Decimal
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from app.production import production_bp
@@ -45,7 +46,7 @@ def create():
                 yarn_count=request.form.get('yarn_count', '').strip(),
                 variety_id=resolve_variety(request.form.get('variety_name', '')),
                 total_ends=int(request.form['total_ends']) if request.form.get('total_ends') else None,
-                planned_length=float(request.form['planned_length']) if request.form.get('planned_length') else None,
+                planned_length=Decimal(request.form['planned_length']) if request.form.get('planned_length') else None,
                 color=request.form.get('color', '').strip(),
                 remark=request.form.get('remark', '').strip()
             )
@@ -79,7 +80,7 @@ def edit(id):
             record.yarn_count = request.form.get('yarn_count', '').strip()
             record.variety_id = resolve_variety(request.form.get('variety_name', ''))
             record.total_ends = int(request.form['total_ends']) if request.form.get('total_ends') else None
-            record.planned_length = float(request.form['planned_length']) if request.form.get('planned_length') else None
+            record.planned_length = Decimal(request.form['planned_length']) if request.form.get('planned_length') else None
             record.color = request.form.get('color', '').strip()
             record.remark = request.form.get('remark', '').strip()
             log_operation('production', record.id, '编辑', before=before, after=record_to_dict(record))

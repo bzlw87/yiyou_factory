@@ -1,6 +1,7 @@
 """
 财务模块 - 应收账款、应付账款、原材料采购、收付款、应收应付调整
 """
+from decimal import Decimal
 from datetime import datetime
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required
@@ -78,7 +79,7 @@ def payment_received_create(customer_id):
             p = PaymentReceived(
                 customer_id=customer_id,
                 payment_date=datetime.strptime(request.form['payment_date'], '%Y-%m-%d').date(),
-                amount=float(request.form['amount']),
+                amount=Decimal(request.form['amount']),
                 method=request.form.get('method', '').strip(),
                 remark=request.form.get('remark', '').strip()
             )
@@ -126,7 +127,7 @@ def receivable_adjust_create(customer_id):
             a = ReceivableAdjustment(
                 customer_id=customer_id,
                 adjust_date=datetime.strptime(request.form['adjust_date'], '%Y-%m-%d').date(),
-                amount=float(request.form['amount']),
+                amount=Decimal(request.form['amount']),
                 reason=request.form['reason'].strip(),
                 remark=request.form.get('remark', '').strip()
             )
@@ -248,8 +249,8 @@ def purchase_create():
                 purchase_date=datetime.strptime(request.form['purchase_date'], '%Y-%m-%d').date(),
                 supplier_id=int(request.form['supplier_id']),
                 material_type_id=int(request.form['material_type_id']),
-                weight_tons=float(request.form['weight_tons']),
-                unit_price=float(request.form['unit_price']),
+                weight_tons=Decimal(request.form['weight_tons']),
+                unit_price=Decimal(request.form['unit_price']),
                 remark=request.form.get('remark', '').strip()
             )
             record.calculate_total()
@@ -281,8 +282,8 @@ def purchase_edit(id):
             record.purchase_date = datetime.strptime(request.form['purchase_date'], '%Y-%m-%d').date()
             record.supplier_id = int(request.form['supplier_id'])
             record.material_type_id = int(request.form['material_type_id'])
-            record.weight_tons = float(request.form['weight_tons'])
-            record.unit_price = float(request.form['unit_price'])
+            record.weight_tons = Decimal(request.form['weight_tons'])
+            record.unit_price = Decimal(request.form['unit_price'])
             record.remark = request.form.get('remark', '').strip()
             record.calculate_total()
             log_operation('raw_material', record.id, '编辑', before=before, after=record_to_dict(record))
@@ -328,7 +329,7 @@ def payment_made_create(supplier_id):
             p = PaymentMade(
                 supplier_id=supplier_id,
                 payment_date=datetime.strptime(request.form['payment_date'], '%Y-%m-%d').date(),
-                amount=float(request.form['amount']),
+                amount=Decimal(request.form['amount']),
                 method=request.form.get('method', '').strip(),
                 remark=request.form.get('remark', '').strip()
             )
@@ -376,7 +377,7 @@ def payable_adjust_create(supplier_id):
             a = PayableAdjustment(
                 supplier_id=supplier_id,
                 adjust_date=datetime.strptime(request.form['adjust_date'], '%Y-%m-%d').date(),
-                amount=float(request.form['amount']),
+                amount=Decimal(request.form['amount']),
                 reason=request.form['reason'].strip(),
                 remark=request.form.get('remark', '').strip()
             )

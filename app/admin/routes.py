@@ -1,6 +1,7 @@
 """
 管理员模块 - 用户/权限/客户/供应商/品种/原材料品种/工资费率/操作日志
 """
+from decimal import Decimal
 from datetime import datetime
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required
@@ -425,7 +426,7 @@ def wage_rate_create():
         try:
             rate = WageRate(
                 name=request.form['name'].strip(),
-                rate=float(request.form['rate']),
+                rate=Decimal(request.form['rate']),
                 description=request.form.get('description', '').strip(),
                 is_active='is_active' in request.form
             )
@@ -448,7 +449,7 @@ def wage_rate_edit(id):
     if request.method == 'POST':
         try:
             rate.name = request.form['name'].strip()
-            rate.rate = float(request.form['rate'])
+            rate.rate = Decimal(request.form['rate'])
             rate.description = request.form.get('description', '').strip()
             rate.is_active = 'is_active' in request.form
             db.session.commit()

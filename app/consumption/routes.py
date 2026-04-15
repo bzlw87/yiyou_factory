@@ -1,6 +1,7 @@
 """
 用纱核算路由 - 对应纸质记录的一行一条
 """
+from decimal import Decimal
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required
 from app.consumption import consumption_bp
@@ -63,8 +64,8 @@ def create():
         try:
             record = YarnConsumption(
                 production_id=int(request.form['production_id']),
-                board_length=float(request.form['board_length']) if request.form.get('board_length') else None,
-                sizing_length=float(request.form['sizing_length']) if request.form.get('sizing_length') else None,
+                board_length=Decimal(request.form['board_length']) if request.form.get('board_length') else None,
+                sizing_length=Decimal(request.form['sizing_length']) if request.form.get('sizing_length') else None,
                 incoming_source=request.form.get('incoming_source', '').strip(),
                 incoming_yarn_count=request.form.get('incoming_yarn_count', '').strip(),
                 incoming_variety=request.form.get('incoming_variety', '').strip(),
@@ -101,8 +102,8 @@ def edit(id):
         try:
             before = record_to_dict(record)
             record.production_id = int(request.form['production_id'])
-            record.board_length = float(request.form['board_length']) if request.form.get('board_length') else None
-            record.sizing_length = float(request.form['sizing_length']) if request.form.get('sizing_length') else None
+            record.board_length = Decimal(request.form['board_length']) if request.form.get('board_length') else None
+            record.sizing_length = Decimal(request.form['sizing_length']) if request.form.get('sizing_length') else None
             record.incoming_source = request.form.get('incoming_source', '').strip()
             record.incoming_yarn_count = request.form.get('incoming_yarn_count', '').strip()
             record.incoming_variety = request.form.get('incoming_variety', '').strip()

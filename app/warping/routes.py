@@ -6,6 +6,7 @@
 保存时需要同时处理主表和明细数据。
 """
 import json
+from decimal import Decimal
 from datetime import datetime
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required
@@ -57,7 +58,7 @@ def create():
                 yarn_count=request.form.get('yarn_count', '').strip(),
                 total_ends=int(request.form['total_ends']) if request.form.get('total_ends') else None,
                 total_beams=int(request.form['total_beams']) if request.form.get('total_beams') else None,
-                board_length=float(request.form['board_length']) if request.form.get('board_length') else None,
+                board_length=Decimal(request.form['board_length']) if request.form.get('board_length') else None,
                 merge_ends=request.form.get('merge_ends', '').strip(),
                 side_ends=request.form.get('side_ends', '').strip(),
                 remark=request.form.get('remark', '').strip()
@@ -82,11 +83,11 @@ def create():
                     warping_id=record.id,
                     beam_order=int(item['beam_order']),
                     head_count=item.get('head_count', ''),
-                    length=float(item['length']) if item.get('length') else None,
+                    length=Decimal(item['length']) if item.get('length') else None,
                     beam_number=item.get('beam_number', ''),
                     shift=item.get('shift', ''),
                     operator=item.get('operator', ''),
-                    wage_subtotal=float(item['wage_subtotal']) if item.get('wage_subtotal') else 0,
+                    wage_subtotal=Decimal(item['wage_subtotal']) if item.get('wage_subtotal') else 0,
                     remark=item.get('remark', '')
                 )
                 db.session.add(detail)
@@ -121,7 +122,7 @@ def edit(id):
             record.yarn_count = request.form.get('yarn_count', '').strip()
             record.total_ends = int(request.form['total_ends']) if request.form.get('total_ends') else None
             record.total_beams = int(request.form['total_beams']) if request.form.get('total_beams') else None
-            record.board_length = float(request.form['board_length']) if request.form.get('board_length') else None
+            record.board_length = Decimal(request.form['board_length']) if request.form.get('board_length') else None
             record.merge_ends = request.form.get('merge_ends', '').strip()
             record.side_ends = request.form.get('side_ends', '').strip()
             record.remark = request.form.get('remark', '').strip()
@@ -145,11 +146,11 @@ def edit(id):
                     warping_id=record.id,
                     beam_order=int(item['beam_order']),
                     head_count=item.get('head_count', ''),
-                    length=float(item['length']) if item.get('length') else None,
+                    length=Decimal(item['length']) if item.get('length') else None,
                     beam_number=item.get('beam_number', ''),
                     shift=item.get('shift', ''),
                     operator=item.get('operator', ''),
-                    wage_subtotal=float(item['wage_subtotal']) if item.get('wage_subtotal') else 0,
+                    wage_subtotal=Decimal(item['wage_subtotal']) if item.get('wage_subtotal') else 0,
                     remark=item.get('remark', '')
                 )
                 db.session.add(detail)
