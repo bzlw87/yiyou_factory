@@ -5,11 +5,13 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from flask_wtf.csrf import CSRFProtect, CSRFError
 from config import config
 
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
+csrf = CSRFProtect()
 login_manager.login_view = 'auth.login'
 login_manager.login_message = '请先登录后再访问此页面'
 login_manager.login_message_category = 'warning'
@@ -22,6 +24,7 @@ def create_app(config_name='default'):
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    csrf.init_app(app)
 
     # 注册蓝图
     from app.auth import auth_bp
@@ -61,7 +64,12 @@ def create_app(config_name='default'):
         return _url_for(endpoint, **params)
 
     # 错误处理
-    from flask import render_template
+    from flask import render_template, redirect, request, flash, url_for
+
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(e):
+        flash('页面已过期，请重新操作', 'warning')
+        return redirect(request.referrer or url_for('dashboard.index'))
 
     @app.errorhandler(403)
     def forbidden(e):

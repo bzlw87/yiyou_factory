@@ -25,6 +25,7 @@
             <td>
                 {% if current_user.has_permission('consumption', 'edit') %}
                 <form method="POST" action="{{ url_for('consumption.transfer_delete', id=t.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                 </form>
                 {% endif %}

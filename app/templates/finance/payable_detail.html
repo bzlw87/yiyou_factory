@@ -30,7 +30,7 @@
             <thead><tr><th>日期</th><th>原因</th><th class="text-end">金额</th><th>备注</th><th></th></tr></thead>
             <tbody>{% for a in adjustments %}<tr>
                 <td>{{ a.adjust_date }}</td><td>{{ a.reason }}</td><td class="text-end text-info">{{ a.amount }}</td><td><small class="text-muted">{{ a.remark or '' }}</small></td>
-                <td>{% if current_user.has_permission('finance', 'edit') %}<form method="POST" action="{{ url_for('finance.payable_adjust_delete', id=a.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button></form>{% endif %}</td>
+                <td>{% if current_user.has_permission('finance', 'edit') %}<form method="POST" action="{{ url_for('finance.payable_adjust_delete', id=a.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button></form>{% endif %}</td>
             </tr>{% endfor %}</tbody>
         </table></div></div></div>
         {% endif %}
@@ -40,7 +40,7 @@
         <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0">
             <thead><tr><th>日期</th><th class="text-end">金额</th><th>方式</th><th></th></tr></thead>
             <tbody>{% for p in payments %}<tr><td>{{ p.payment_date }}</td><td class="text-end text-success">{{ p.amount }}</td><td>{{ p.method or '' }}</td>
-            <td>{% if current_user.has_permission('finance', 'edit') %}<form method="POST" action="{{ url_for('finance.payment_made_delete', id=p.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button></form>{% endif %}</td>
+            <td>{% if current_user.has_permission('finance', 'edit') %}<form method="POST" action="{{ url_for('finance.payment_made_delete', id=p.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button></form>{% endif %}</td>
             </tr>{% else %}<tr><td colspan="4" class="text-muted text-center">暂无</td></tr>{% endfor %}</tbody>
         </table></div></div></div>
     </div>

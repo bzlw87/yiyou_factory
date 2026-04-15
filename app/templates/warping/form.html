@@ -5,6 +5,7 @@
     <div class="card-header"><h5 class="mb-0"><i class="bi bi-diagram-3"></i> {{ '编辑' if record else '新增' }}整经记录</h5></div>
     <div class="card-body">
         <form method="POST" id="warpingForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <h6 class="text-primary mb-3">基本信息</h6>
             <div class="row g-3">
                 <div class="col-md-3">

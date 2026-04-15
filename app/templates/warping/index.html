@@ -48,6 +48,7 @@
                         {% if current_user.has_permission('warping', 'edit') %}
                         <a href="{{ url_for('warping.edit', id=r.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
                         <form method="POST" action="{{ url_for('warping.delete', id=r.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                         </form>
                         {% endif %}

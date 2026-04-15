@@ -6,6 +6,7 @@
     <div class="card-body">
         <div class="alert alert-info"><small>用于录入期初余额或其他不走送货单的特殊应收。正数表示客户欠你钱。</small></div>
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3"><label class="form-label">日期 <span class="text-danger">*</span></label><input type="date" name="adjust_date" class="form-control" required></div>
             <div class="mb-3"><label class="form-label">金额 <span class="text-danger">*</span></label><input type="number" step="0.01" name="amount" class="form-control" required><div class="form-text">正数=增加应收（客户欠更多），负数=减少应收</div></div>
             <div class="mb-3"><label class="form-label">原因 <span class="text-danger">*</span></label><input type="text" name="reason" class="form-control" required placeholder="如：期初余额、历史欠款"></div>

@@ -5,6 +5,7 @@
     <div class="card-header"><h5 class="mb-0"><i class="bi bi-calculator"></i> {{ '编辑' if record else '新增' }}用纱核算</h5></div>
     <div class="card-body">
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label">客户 <span class="text-danger">*</span></label>

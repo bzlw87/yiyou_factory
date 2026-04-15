@@ -5,6 +5,7 @@
     <div class="card-header"><h5 class="mb-0"><i class="bi bi-bag"></i> {{ '编辑' if record else '新增' }}原材料采购</h5></div>
     <div class="card-body">
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3"><label class="form-label">采购日期 <span class="text-danger">*</span></label><input type="date" name="purchase_date" class="form-control" required value="{{ record.purchase_date if record else '' }}"></div>
             <div class="mb-3"><label class="form-label">供应商 <span class="text-danger">*</span></label>
                 <select name="supplier_id" class="form-select" required>

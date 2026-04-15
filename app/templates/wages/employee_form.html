@@ -5,6 +5,7 @@
     <div class="card-header"><h5 class="mb-0"><i class="bi bi-person"></i> {{ '编辑' if employee else '新增' }}员工</h5></div>
     <div class="card-body">
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3"><label class="form-label">姓名 <span class="text-danger">*</span></label>
                 <input type="text" name="name" class="form-control" required value="{{ employee.name if employee else '' }}"></div>
             <div class="mb-3"><label class="form-label">岗位 <span class="text-danger">*</span></label>

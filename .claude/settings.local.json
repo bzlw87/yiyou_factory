@@ -16,7 +16,8 @@
       "Bash(curl -fsSLk \"https://cdn.npmmirror.com/packages/flatpickr/4.6.13/files/dist/l10n/zh.js\" -o C:/Users/14402/Desktop/yiyou_factory/app/static/js/flatpickr.zh.js)",
       "Bash(find C:/Users/14402/Desktop/yiyou_factory/app -name *.py)",
       "Bash(grep -n \"migrate\\\\|create_all\\\\|Migrate\" C:/Users/14402/Desktop/yiyou_factory/app/__init__.py C:/Users/14402/Desktop/yiyou_factory/*.py)",
-      "Bash(flask db:*)"
+      "Bash(flask db:*)",
+      "Bash(python3 -)"
     ]
   }
 }

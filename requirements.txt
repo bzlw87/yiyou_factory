@@ -29,3 +29,6 @@ gunicorn==23.0.0
 
 # python-dotenv - 从 .env 文件加载环境变量（密钥、数据库密码等）
 python-dotenv==1.0.1
+
+# Flask-WTF - CSRF 防护
+Flask-WTF==1.2.2

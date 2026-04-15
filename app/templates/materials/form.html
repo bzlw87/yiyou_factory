@@ -5,6 +5,7 @@
     <div class="card-header"><h5 class="mb-0"><i class="bi bi-box-seam"></i> {{ '编辑' if record else '新增' }}原料入库</h5></div>
     <div class="card-body">
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">收货日期 <span class="text-danger">*</span></label>

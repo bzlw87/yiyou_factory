@@ -6,6 +6,7 @@
     <div class="card-body">
         <div class="alert alert-info"><small>同一客户的不同缸次之间，上一个缸次剩的纱被下一个缸次拿去用了。先选客户，再选来源和去向缸次。</small></div>
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3">
                 <label class="form-label">客户 <span class="text-danger">*</span></label>
                 <select id="customerSelect" class="form-select" required onchange="loadConsumptions()">

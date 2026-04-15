@@ -9,6 +9,7 @@
                 <h5 class="text-center mb-3">常州市益友染织有限公司</h5>
                 <p class="text-center text-muted mb-4">生产管理系统</p>
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label class="form-label">用户名</label>
                         <input type="text" name="username" class="form-control" required autofocus placeholder="请输入用户名">

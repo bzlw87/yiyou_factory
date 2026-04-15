@@ -5,6 +5,7 @@
     <div class="card-header"><h5 class="mb-0"><i class="bi bi-truck"></i> {{ '编辑' if record else '新增' }}送货单</h5></div>
     <div class="card-body">
         <form method="POST" id="mainForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">送货单号 <span class="text-danger">*</span></label>

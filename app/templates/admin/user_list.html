@@ -25,6 +25,7 @@
                         {% endif %}
                         {% if u.id != 1 %}
                         <form method="POST" action="{{ url_for('admin.user_delete', id=u.id) }}" class="d-inline" onsubmit="return confirm('确定删除用户 {{ u.display_name }}？')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                         </form>
                         {% endif %}
