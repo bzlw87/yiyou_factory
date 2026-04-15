@@ -241,7 +241,7 @@ class DeliveryOrder(db.Model):
     送货记录主表
 
     费率自动带入逻辑：同客户+同织数+同来纱品种+同总经根数+同颜色，五个条件全匹配。
-    费用合计 = 板长 * 费率
+    费用合计 = 染色长度 * 费率
     """
     __tablename__ = 'delivery_orders'
 
@@ -250,10 +250,12 @@ class DeliveryOrder(db.Model):
     delivery_date = db.Column(db.Date, nullable=False, default=date.today)
     customer_id = db.Column(db.Integer, db.ForeignKey('customers.id'), nullable=False)
     vat_batch = db.Column(db.String(50))              # 缸次
+    yarn_count = db.Column(db.String(50))             # 织数
     board_length = db.Column(db.Numeric(12, 2))       # 板长(m)
     dyeing_length = db.Column(db.Numeric(12, 2))      # 染色长度(m)
     color = db.Column(db.String(50))                   # 颜色
     yarn_type = db.Column(db.String(200))              # 来纱品种
+    incoming_yarn = db.Column(db.String(100))          # 来纱数量
     yarn_used = db.Column(db.String(100))              # 用纱数量
     yarn_remaining = db.Column(db.String(100))         # 余纱数量
     rate = db.Column(db.Numeric(10, 4))                # 费率（元/m）
@@ -267,8 +269,8 @@ class DeliveryOrder(db.Model):
                               cascade='all, delete-orphan', order_by='DeliveryDetail.id')
 
     def calculate_total_cost(self):
-        if self.board_length and self.rate:
-            self.total_cost = round(float(self.board_length) * float(self.rate), 2)
+        if self.dyeing_length and self.rate:
+            self.total_cost = round(float(self.dyeing_length) * float(self.rate), 2)
 
 
 class DeliveryDetail(db.Model):

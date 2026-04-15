@@ -84,10 +84,12 @@ def create():
                 delivery_date=datetime.strptime(request.form['delivery_date'], '%Y-%m-%d').date(),
                 customer_id=resolve_customer(request.form.get('customer_name', '')),
                 vat_batch=request.form.get('vat_batch', '').strip(),
+                yarn_count=request.form.get('yarn_count', '').strip(),
                 board_length=float(request.form['board_length']) if request.form.get('board_length') else None,
                 dyeing_length=float(request.form['dyeing_length']) if request.form.get('dyeing_length') else None,
                 color=request.form.get('color', '').strip(),
                 yarn_type=request.form.get('yarn_type', '').strip(),
+                incoming_yarn=request.form.get('incoming_yarn', '').strip(),
                 yarn_used=request.form.get('yarn_used', '').strip(),
                 yarn_remaining=request.form.get('yarn_remaining', '').strip(),
                 rate=float(request.form['rate']) if request.form.get('rate') else None,
@@ -143,10 +145,12 @@ def edit(id):
             record.delivery_date = datetime.strptime(request.form['delivery_date'], '%Y-%m-%d').date()
             record.customer_id = resolve_customer(request.form.get('customer_name', ''))
             record.vat_batch = request.form.get('vat_batch', '').strip()
+            record.yarn_count = request.form.get('yarn_count', '').strip()
             record.board_length = float(request.form['board_length']) if request.form.get('board_length') else None
             record.dyeing_length = float(request.form['dyeing_length']) if request.form.get('dyeing_length') else None
             record.color = request.form.get('color', '').strip()
             record.yarn_type = request.form.get('yarn_type', '').strip()
+            record.incoming_yarn = request.form.get('incoming_yarn', '').strip()
             record.yarn_used = request.form.get('yarn_used', '').strip()
             record.yarn_remaining = request.form.get('yarn_remaining', '').strip()
             record.rate = float(request.form['rate']) if request.form.get('rate') else None
