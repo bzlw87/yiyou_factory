@@ -7,6 +7,7 @@ from app.consumption import consumption_bp
 from app.models import YarnConsumption, ProductionOrder, Customer, YarnVariety
 from app.helpers import permission_required, log_operation, record_to_dict
 from app import db
+import logging
 
 
 @consumption_bp.route('/api/productions')
@@ -82,7 +83,8 @@ def create():
             return redirect(url_for('consumption.index'))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
 
     customers = Customer.query.order_by(Customer.name).all()
     varieties = YarnVariety.query.filter_by(is_active=True).order_by(YarnVariety.name).all()
@@ -116,7 +118,8 @@ def edit(id):
             return redirect(url_for('consumption.index'))
         except Exception as e:
             db.session.rollback()
-            flash(f'更新失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('更新失败，请检查输入后重试', 'danger')
 
     customers = Customer.query.order_by(Customer.name).all()
     varieties = YarnVariety.query.filter_by(is_active=True).order_by(YarnVariety.name).all()
@@ -137,5 +140,6 @@ def delete(id):
         flash('记录已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，请检查后重试', 'danger')
     return redirect(url_for('consumption.index'))

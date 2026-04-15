@@ -9,6 +9,7 @@ from app.models import Employee, WageRecord
 from app.helpers import permission_required, log_operation, record_to_dict
 from app import db
 from sqlalchemy import func
+import logging
 
 
 @wages_bp.route('/')
@@ -65,7 +66,8 @@ def employee_create():
             return redirect(url_for('wages.employee_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
     return render_template('wages/employee_form.html', employee=None)
 
 
@@ -87,7 +89,8 @@ def employee_edit(id):
             return redirect(url_for('wages.employee_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'更新失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('更新失败，请检查输入后重试', 'danger')
     return render_template('wages/employee_form.html', employee=emp)
 
 
@@ -149,7 +152,8 @@ def record_create(emp_id):
             return redirect(url_for('wages.wage_detail', emp_id=emp_id, year=r.year))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
 
     year = request.args.get('year', date.today().year, type=int)
     return render_template('wages/record_form.html', emp=emp, record=None, year=year)
@@ -179,7 +183,8 @@ def record_edit(id):
             return redirect(url_for('wages.wage_detail', emp_id=emp.id, year=r.year))
         except Exception as e:
             db.session.rollback()
-            flash(f'更新失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('更新失败，请检查输入后重试', 'danger')
     return render_template('wages/record_form.html', emp=emp, record=r, year=r.year)
 
 
@@ -198,5 +203,6 @@ def record_delete(id):
         flash('记录已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，请检查后重试', 'danger')
     return redirect(url_for('wages.wage_detail', emp_id=emp_id, year=year))

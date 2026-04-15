@@ -6,9 +6,11 @@
 """
 from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
+from urllib.parse import urlparse
 from app.auth import auth_bp
 from app.models import User
 from app import db
+import logging
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -45,7 +47,10 @@ def login():
         # 如果用户之前想访问某个页面但被要求登录，登录后跳转回那个页面
         next_page = request.args.get('next')
         if next_page:
-            return redirect(next_page)
+            parsed = urlparse(next_page)
+            # 只允许站内跳转（没有域名的相对路径）
+            if parsed.netloc == '' and parsed.scheme == '':
+                return redirect(next_page)
         return redirect(url_for('dashboard.index'))
 
     return render_template('auth/login.html')

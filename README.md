@@ -1,250 +1,188 @@
-# 益友染织生产管理系统 - 完整部署指南
+# 益友染织生产管理系统 V2
 
-> 本指南假设你是 Python 零基础初学者，每一步都写得非常详细。
-> 请严格按照顺序执行，不要跳过任何步骤。
+常州市益友染织有限公司（牛仔布浆染厂）内部生产管理系统。
 
----
+## 技术栈
 
-## 目录
+- **后端**：Flask + SQLAlchemy + Flask-Login + Flask-Migrate
+- **数据库**：MySQL 8.0（utf8mb4）
+- **前端**：Bootstrap 5 + Jinja2 模板
+- **部署**：腾讯云轻量服务器（Ubuntu 22.04）+ Gunicorn + Nginx
+- **服务器 IP**：101.43.91.152
 
-1. [项目结构说明](#1-项目结构说明)
-2. [本地开发环境搭建](#2-本地开发环境搭建)
-3. [云服务器部署（阿里云/腾讯云）](#3-云服务器部署)
-4. [域名配置和 HTTPS](#4-域名配置和-https)
-5. [日常维护命令](#5-日常维护命令)
-6. [常见报错和解决方法](#6-常见报错和解决方法)
+## 项目规模
 
----
+- Python 后端：2731 行（21个文件）
+- HTML 模板：2056 行（47个模板）
+- 数据库表：20 张
+- 模块：8 个功能模块 + 系统管理
 
-## 1. 项目结构说明
+## 业务流程
 
 ```
-yiyou_factory/                 ← 项目根目录
-├── config.py                  ← 配置文件（数据库地址、密钥等）
-├── run.py                     ← 开发环境启动入口
-├── wsgi.py                    ← 生产环境启动入口（Gunicorn 用）
-├── init_db.py                 ← 数据库初始化脚本（首次必须执行）
-├── requirements.txt           ← Python 依赖包列表
-├── .env.example               ← 环境变量模板
-├── deploy/                    ← 部署配置文件
-│   ├── nginx_yiyou.conf       ← Nginx 配置
-│   └── yiyou.service          ← Systemd 服务配置（开机自启）
-└── app/                       ← 应用主目录
-    ├── __init__.py             ← 应用工厂（创建 Flask 应用）
-    ├── models.py               ← 数据库模型（所有表的定义）
-    ├── helpers.py              ← 工具函数（权限检查等）
-    ├── auth/routes.py          ← 登录认证
-    ├── dashboard/routes.py     ← 首页仪表盘
-    ├── materials/routes.py     ← 模块一：原料入库
-    ├── production/routes.py    ← 模块二：生产排单
-    ├── consumption/routes.py   ← 模块三：用纱核算
-    ├── warping/routes.py       ← 模块四：整经记录
-    ├── delivery/routes.py      ← 模块五：送货记录
-    ├── admin/routes.py         ← 管理员模块
-    ├── templates/              ← HTML 模板文件
-    └── static/css/style.css    ← 自定义样式
+客户送纱 → 原料入库 → 安排工艺（缸次号）→ 生产加工 → 用纱核算 → 送货结算 → 收款
+                                                                         ↑
+工厂买耗材 → 原材料采购 → 付款给供应商                                    财务管理
+工资发放 → 员工工资管理（按月记录）
 ```
 
----
+## 数据库表（20张）
 
-## 2. 本地开发环境搭建
+### 基础管理
+- `customers` — 客户
+- `suppliers` — 供应商
+- `yarn_varieties` — 纱线品种
+- `raw_material_types` — 原材料品种（靛蓝、浆料等）
 
-### 2.1 安装 Python
+### 用户权限
+- `users` — 用户账号
+- `permissions` — 模块权限（6个模块 × 查看/编辑）
 
-**Windows：**
-1. 访问 https://www.python.org/downloads/ 下载 Python 3.11+
-2. **安装时一定勾选 "Add Python to PATH"**
-3. 安装后打开命令提示符（Win+R → 输入 cmd → 回车），验证：
+### 生产核心
+- `production_orders` — 客户工艺（核心表，缸次号唯一标识）
+- `material_receives` — 原料入库（通过 production_id 关联缸次，可后补）
+- `yarn_consumptions` — 用纱核算（一条记录 = 纸质账本一行）
+
+### 送货
+- `delivery_orders` — 送货记录主表
+- `delivery_details` — 送货单缸号明细
+
+### 财务
+- `payments_received` — 收款记录
+- `receivable_adjustments` — 应收调整（期初余额等）
+- `raw_material_purchases` — 原材料采购
+- `payments_made` — 付款记录
+- `payable_adjustments` — 应付调整
+
+### 工资
+- `employees` — 员工（姓名、岗位、基本月薪、房租补贴、在职状态）
+- `wage_records` — 工资记录（每人每月一行，对齐纸质账本）
+- `wage_rates` — 工资费率（预留）
+
+### 系统
+- `operation_logs` — 操作日志
+
+## 功能模块
+
+### 1. 首页（仪表盘）
+- 本月数据概览（从本月1号到今天）
+- 最近原料入库 / 客户工艺 / 送货记录
+
+### 2. 原料入库
+- 客户送纱登记
+- 客户字段：datalist（可选 + 可输入新客户，自动创建）
+- 关联缸次：先选客户再选缸次，只显示该客户最近2个月的缸次
+- 关联缸次可后补（来纱时可能还不知道用在哪个缸次）
+- 标签带单位：单件重量(kg)、总重量(t)
+
+### 3. 客户工艺
+- 每批生产的基本信息（缸次号、客户、织数、品种、总经根数、颜色等）
+- 缸次号全局唯一，是整个系统的核心标识
+- 品种字段：datalist（可选 + 可输入新品种，自动创建）
+
+### 4. 用纱核算
+- 一条记录对应纸质账本一行
+- 字段：来纱来源 + 来纱（织数+品种+重量）+ 本次用量 + 余下（织数+品种+重量）
+- 来纱来源：文本字段，可写"客户送纱"或"来自缸次XXX余纱"
+- 先选客户再选缸次，只显示该客户最近2个月的缸次
+- 品种字段：datalist
+
+### 5. 全流程追溯
+- 输入缸次号，一个页面看完：客户工艺 → 原料入库 → 用纱核算 → 送货记录
+
+### 6. 送货记录
+- 送货单（单号、日期、客户、缸次、板长、颜色、来纱品种、费率等）
+- 费率自动带入：同客户+同品种+同颜色匹配历史费率，只在费率为空时填入
+- 缸号明细：一张送货单可包含多个缸号
+- 费用合计 = 板长 × 费率（自动计算）
+- 送货费用自动汇入应收账款
+
+### 7. 财务管理
+- **应收账款**：按客户汇总（送货合计 + 手动调整 - 已收 = 欠款余额）
+- **应付账款**：按供应商汇总（采购合计 + 手动调整 - 已付 = 欠款余额）
+- **原材料采购**：靛蓝、浆料等耗材采购记录
+- **收款/付款**：登记收付款
+- **账目总结**：自选日期范围（开始日期-结束日期），显示送货金额、收款、采购、付款、工资、收支差额，按客户/供应商分别统计
+
+### 8. 工资管理
+- 统一模块（不再分整经/浆染）
+- 员工列表：姓名、岗位、基本月薪、房租补贴、在职状态
+- 工资详情：每人一页，按年查看全年工资记录
+- 每月一行：应发工资、休息天数、扣款、实发金额、是否已发、发放日期
+- 年终奖/补贴用 month=0 表示
+- 底部自动汇总全年数据
+
+### 9. 系统管理
+- 用户管理 + 权限管理（6个模块独立控制查看/编辑）
+- 客户管理 / 供应商管理 / 品种管理 / 原材料品种管理
+- 操作日志（所有增删改都有记录）
+
+## 权限体系
+
+6个模块独立控制：
+| 模块 | 权限key |
+|------|---------|
+| 原料入库 | materials |
+| 客户工艺 | production |
+| 用纱核算 | consumption |
+| 送货记录 | delivery |
+| 财务管理 | finance |
+| 工资管理 | wages |
+
+## 部署方式
+
+### 不删库部署（用 migrate，保留数据）
 ```bash
-python --version
-```
-
-**Mac：**
-```bash
-brew install python
-```
-
-### 2.2 安装 MySQL
-
-**Windows：** 下载 MySQL Installer：https://dev.mysql.com/downloads/installer/
-**Mac：** `brew install mysql && brew services start mysql`
-
-### 2.3 创建数据库
-
-打开 MySQL 命令行，执行：
-```sql
-CREATE DATABASE yiyou_factory CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'yiyou'@'localhost' IDENTIFIED BY 'YiYou2026!';
-GRANT ALL PRIVILEGES ON yiyou_factory.* TO 'yiyou'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
-```
-> 把 `YiYou2026!` 改成你自己的密码
-
-### 2.4 配置项目
-
-编辑 `config.py`，修改数据库密码：
-```python
-'mysql+pymysql://yiyou:YiYou2026!@localhost:3306/yiyou_factory?charset=utf8mb4'
-```
-
-### 2.5 安装 Python 依赖
-
-```bash
-cd yiyou_factory
-python -m venv venv
-
-# 激活虚拟环境
-# Windows:
-venv\Scripts\activate
-# Mac/Linux:
-source venv/bin/activate
-
-# 安装依赖（国内用清华镜像加速）
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-```
-
-### 2.6 初始化数据库
-```bash
-python init_db.py
-```
-
-### 2.7 启动项目
-```bash
-python run.py
-```
-浏览器访问 http://127.0.0.1:5000，用 admin / admin123 登录。
-
----
-
-## 3. 云服务器部署
-
-### 3.1 购买云服务器
-- 阿里云 ECS / 腾讯云 CVM
-- 系统选 **Ubuntu 22.04 LTS**
-- 最低 2核4GB
-- 安全组开放端口：22、80、443
-
-### 3.2 SSH 连接服务器
-```bash
-ssh root@你的服务器IP
-```
-
-### 3.3 服务器初始化
-```bash
-apt update && apt upgrade -y
-apt install -y python3 python3-pip python3-venv git nginx mysql-server
-systemctl start mysql && systemctl enable mysql
-mysql_secure_installation
-```
-
-### 3.4 创建数据库
-```bash
-mysql -u root -p
-```
-```sql
-CREATE DATABASE yiyou_factory CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'yiyou'@'localhost' IDENTIFIED BY '设一个强密码';
-GRANT ALL PRIVILEGES ON yiyou_factory.* TO 'yiyou'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
-```
-
-### 3.5 创建系统用户并上传代码
-```bash
-adduser yiyou
-# 从你的电脑上传（在本地终端执行）:
-scp -r yiyou_factory/ root@服务器IP:/home/yiyou/
-# 然后在服务器上:
 chown -R yiyou:yiyou /home/yiyou/yiyou_factory
-```
-
-### 3.6 安装依赖
-```bash
 su - yiyou
-cd /home/yiyou/yiyou_factory
-python3 -m venv venv
+cd yiyou_factory
 source venv/bin/activate
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+flask db stamp head
+flask db migrate -m "描述"
+flask db upgrade
+exit
+sudo systemctl restart yiyou
 ```
 
-### 3.7 修改配置并初始化
+### 删库重建部署（会清空所有数据）
 ```bash
-nano config.py   # 改数据库密码
-python3 init_db.py
-python3 run.py    # 测试运行，Ctrl+C 停止
-exit              # 回到 root
+mysql -u yiyou -pLEIwu123 -e "DROP DATABASE yiyou_factory; CREATE DATABASE yiyou_factory CHARACTER SET utf8mb4;"
+su - yiyou
+cd yiyou_factory
+source venv/bin/activate
+python init_db.py
+exit
+sudo systemctl restart yiyou
 ```
 
-### 3.8 配置 Gunicorn 服务
-```bash
-cp /home/yiyou/yiyou_factory/deploy/yiyou.service /etc/systemd/system/
-nano /etc/systemd/system/yiyou.service
-# 修改 SECRET_KEY 和 DATABASE_URL
-# SECRET_KEY 用这个命令生成: python3 -c "import secrets; print(secrets.token_hex(32))"
+注意：yiyou 用户没有 sudo 权限，需要 su root 执行管理命令。
 
-systemctl daemon-reload
-systemctl start yiyou
-systemctl enable yiyou
-systemctl status yiyou   # 确认显示 active (running)
-```
+## 已知待修复问题（GPT代码审查 + 自检）
 
-### 3.9 配置 Nginx
-```bash
-cp /home/yiyou/yiyou_factory/deploy/nginx_yiyou.conf /etc/nginx/sites-available/yiyou_factory
-nano /etc/nginx/sites-available/yiyou_factory
-# 改 server_name 为你的域名或 IP
+### 安全修复（优先级高）
+- [ ] 加 CSRF 防护（Flask-WTF）
+- [ ] 修开放重定向（auth/routes.py）
+- [ ] API 补 permission_required（materials、consumption、delivery 的内部API）
+- [ ] 去掉硬编码 SECRET_KEY 和默认密码，改用环境变量
+- [ ] 关闭生产环境 debug=True
+- [ ] 错误提示改通用文案，详细信息写日志
 
-ln -s /etc/nginx/sites-available/yiyou_factory /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
-nginx -t
-systemctl restart nginx && systemctl enable nginx
-```
+### 数据正确性（优先级高）
+- [ ] float → Decimal 统一处理金额/费率/重量
+- [ ] 工资日期显式 strptime
+- [ ] 追溯查询改精确匹配走 DeliveryDetail（当前 contains 会误命中）
+- [ ] 管理员保护（至少保留一个管理员）
+- [ ] 费率匹配文档注释从五条件改成三条件（代码逻辑是对的，注释错了）
 
-浏览器访问 http://你的服务器IP 即可使用！
+### 长期维护（重要但不急）
+- [ ] 正式启用 migration 体系，不再依赖 db.create_all()
+- [ ] 数据库自动备份脚本
+- [ ] 数据导出功能（Excel）
+- [ ] 客户工艺加"已完成"状态
+- [ ] 客户欠款一览页面
+- [ ] Git 接入版本控制
 
----
-
-## 4. 域名配置和 HTTPS
-
-```bash
-# 域名解析：在域名控制台添加 A 记录指向服务器 IP
-# 修改 Nginx server_name 为你的域名
-# 安装 HTTPS 证书：
-apt install -y certbot python3-certbot-nginx
-certbot --nginx -d 你的域名.com -d www.你的域名.com
-```
-
-> 中国大陆服务器需要 ICP 备案才能使用域名
-
----
-
-## 5. 日常维护
-
-```bash
-systemctl restart yiyou                    # 更新代码后重启
-journalctl -u yiyou -f                     # 查看实时日志
-mysqldump -u yiyou -p yiyou_factory > backup.sql   # 备份数据库
-mysql -u yiyou -p yiyou_factory < backup.sql       # 恢复数据库
-```
-
----
-
-## 6. 常见报错
-
-| 报错信息 | 原因 | 解决方法 |
-|---------|------|---------|
-| `ModuleNotFoundError: No module named 'flask'` | 虚拟环境没激活 | `source venv/bin/activate` |
-| `Access denied for user` | 数据库密码错误 | 检查 config.py 中的密码 |
-| `Can't connect to MySQL server` | MySQL 没运行 | `sudo systemctl start mysql` |
-| 502 Bad Gateway | Gunicorn 没运行 | `sudo systemctl restart yiyou` |
-| CSS 样式加载不出 | Nginx 路径错误 | 检查 nginx 配置中 static 路径 |
-| 手机无法访问 | 安全组没开 80 端口 | 云控制台添加安全组规则 |
-
----
-
-## 默认账号
-
-| 用户名 | 密码 | 角色 |
-|-------|------|------|
-| admin | admin123 | 管理员（首次登录后请立即修改！）|
+### 已确认不改的（有意设计）
+- 客户/品种自动创建：用户明确要求的便利性
+- 重量字段存文本："11T+500kg"是纸质账本格式，拆数值+单位反而丢信息
+- 费率三条件匹配：已和用户确认过，三条件够用

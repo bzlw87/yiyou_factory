@@ -1,28 +1,33 @@
 """
 配置文件 - 存放项目所有的配置参数
-为什么单独放一个文件？因为开发环境和生产环境的配置不同，
-比如开发时用本地数据库，上线后用云服务器数据库，
-分开管理方便切换。
+
+敏感信息（密钥、数据库密码）从 .env 文件读取，不写在代码里。
+.env 文件位于项目根目录，已在 .gitignore 中排除。
 """
 import os
+from dotenv import load_dotenv
 
 # 获取当前文件所在的目录路径，用来定位项目根目录
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+# 加载 .env 文件中的环境变量
+load_dotenv(os.path.join(basedir, '.env'))
 
 
 class Config:
     """
     基础配置类 - 所有环境共用的配置写在这里
-    """
-    # SECRET_KEY 是 Flask 用来加密 session（会话）的密钥
-    # 实际部署时必须改成一个随机的长字符串，不能用这个默认值
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'yiyou-factory-secret-key-change-me'
 
-    # 数据库连接地址（MySQL）
-    # 格式：mysql+pymysql://用户名:密码@服务器地址:端口/数据库名?charset=utf8mb4
-    # utf8mb4 支持中文和特殊字符
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mysql+pymysql://yiyou:LEIwu123@localhost:3306/yiyou_factory?charset=utf8mb4'
+    SECRET_KEY 和 DATABASE_URL 必须在 .env 文件中配置。
+    如果 .env 缺失或变量未设置，启动时会直接报错，避免用不安全的默认值运行。
+    """
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+    if not SECRET_KEY:
+        raise RuntimeError('SECRET_KEY 未设置，请在 .env 文件中配置')
+
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    if not SQLALCHEMY_DATABASE_URI:
+        raise RuntimeError('DATABASE_URL 未设置，请在 .env 文件中配置')
 
     # 关闭 SQLAlchemy 的修改追踪功能（节省内存，我们用不到）
     SQLALCHEMY_TRACK_MODIFICATIONS = False

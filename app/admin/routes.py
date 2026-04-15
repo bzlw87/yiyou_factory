@@ -9,6 +9,7 @@ from app.models import (User, Permission, WageRate, OperationLog,
                         Customer, Supplier, YarnVariety, RawMaterialType)
 from app.helpers import admin_required, compute_diff
 from app import db
+import logging
 
 # 权限模块定义
 MODULES = {
@@ -127,7 +128,8 @@ def user_delete(id):
         flash('用户已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，请检查后重试', 'danger')
     return redirect(url_for('admin.user_list'))
 
 
@@ -159,7 +161,8 @@ def customer_create():
             return redirect(url_for('admin.customer_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
     return render_template('admin/customer_form.html', customer=None)
 
 
@@ -179,7 +182,8 @@ def customer_edit(id):
             return redirect(url_for('admin.customer_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'更新失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('更新失败，请检查输入后重试', 'danger')
     return render_template('admin/customer_form.html', customer=c)
 
 
@@ -194,7 +198,8 @@ def customer_delete(id):
         flash('客户已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败（可能有关联数据）：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，可能存在关联数据，请检查后重试', 'danger')
     return redirect(url_for('admin.customer_list'))
 
 
@@ -226,7 +231,8 @@ def supplier_create():
             return redirect(url_for('admin.supplier_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
     return render_template('admin/supplier_form.html', supplier=None)
 
 
@@ -246,7 +252,8 @@ def supplier_edit(id):
             return redirect(url_for('admin.supplier_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'更新失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('更新失败，请检查输入后重试', 'danger')
     return render_template('admin/supplier_form.html', supplier=s)
 
 
@@ -261,7 +268,8 @@ def supplier_delete(id):
         flash('供应商已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败（可能有关联数据）：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，可能存在关联数据，请检查后重试', 'danger')
     return redirect(url_for('admin.supplier_list'))
 
 
@@ -291,7 +299,8 @@ def variety_create():
             return redirect(url_for('admin.variety_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
     return render_template('admin/variety_form.html', variety=None)
 
 
@@ -309,7 +318,8 @@ def variety_edit(id):
             return redirect(url_for('admin.variety_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'更新失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('更新失败，请检查输入后重试', 'danger')
     return render_template('admin/variety_form.html', variety=v)
 
 
@@ -324,7 +334,8 @@ def variety_delete(id):
         flash('品种已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败（可能有关联数据）：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，可能存在关联数据，请检查后重试', 'danger')
     return redirect(url_for('admin.variety_list'))
 
 
@@ -355,7 +366,8 @@ def material_type_create():
             return redirect(url_for('admin.material_type_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
     return render_template('admin/material_type_form.html', mtype=None)
 
 
@@ -374,7 +386,8 @@ def material_type_edit(id):
             return redirect(url_for('admin.material_type_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'更新失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('更新失败，请检查输入后重试', 'danger')
     return render_template('admin/material_type_form.html', mtype=t)
 
 
@@ -389,7 +402,8 @@ def material_type_delete(id):
         flash('原材料品种已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败（可能有关联数据）：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，可能存在关联数据，请检查后重试', 'danger')
     return redirect(url_for('admin.material_type_list'))
 
 
@@ -421,7 +435,8 @@ def wage_rate_create():
             return redirect(url_for('admin.wage_rate_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
     return render_template('admin/wage_rate_form.html', rate=None)
 
 
@@ -441,7 +456,8 @@ def wage_rate_edit(id):
             return redirect(url_for('admin.wage_rate_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'更新失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('更新失败，请检查输入后重试', 'danger')
     return render_template('admin/wage_rate_form.html', rate=rate)
 
 
@@ -456,7 +472,8 @@ def wage_rate_delete(id):
         flash('费率已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，请检查后重试', 'danger')
     return redirect(url_for('admin.wage_rate_list'))
 
 

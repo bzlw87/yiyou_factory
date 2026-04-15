@@ -9,6 +9,7 @@ from app.delivery import delivery_bp
 from app.models import DeliveryOrder, DeliveryDetail, Customer
 from app.helpers import permission_required, log_operation, record_to_dict, get_record_logs, resolve_customer
 from app import db
+import logging
 
 
 @delivery_bp.route('/')
@@ -122,7 +123,8 @@ def create():
             return redirect(url_for('delivery.index'))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
 
     customers = Customer.query.order_by(Customer.name).all()
     return render_template('delivery/form.html', record=None, details=[],
@@ -178,7 +180,8 @@ def edit(id):
             return redirect(url_for('delivery.index'))
         except Exception as e:
             db.session.rollback()
-            flash(f'更新失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('更新失败，请检查输入后重试', 'danger')
 
     customers = Customer.query.order_by(Customer.name).all()
     details = record.details.all()
@@ -212,5 +215,6 @@ def delete(id):
         flash('记录已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，请检查后重试', 'danger')
     return redirect(url_for('delivery.index'))

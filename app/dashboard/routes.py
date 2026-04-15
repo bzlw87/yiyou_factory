@@ -7,6 +7,7 @@ from flask_login import login_required
 from app.dashboard import dashboard_bp
 from app.models import MaterialReceive, ProductionOrder, YarnConsumption, DeliveryOrder
 from app import db
+import logging
 
 
 @dashboard_bp.route('/')

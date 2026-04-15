@@ -11,6 +11,7 @@ from app.models import (Customer, Supplier, DeliveryOrder, PaymentReceived,
 from app.helpers import permission_required, log_operation, record_to_dict
 from app import db
 from sqlalchemy import func
+import logging
 
 
 # ========== 应收账款 ==========
@@ -89,7 +90,8 @@ def payment_received_create(customer_id):
             return redirect(url_for('finance.receivable_detail', customer_id=customer_id))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
     return render_template('finance/payment_received_form.html', customer=customer, payment=None)
 
 
@@ -107,7 +109,8 @@ def payment_received_delete(id):
         flash('收款记录已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，请检查后重试', 'danger')
     return redirect(url_for('finance.receivable_detail', customer_id=customer_id))
 
 
@@ -135,7 +138,8 @@ def receivable_adjust_create(customer_id):
             return redirect(url_for('finance.receivable_detail', customer_id=customer_id))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
     return render_template('finance/receivable_adjust_form.html', customer=customer)
 
 
@@ -153,7 +157,8 @@ def receivable_adjust_delete(id):
         flash('应收调整已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，请检查后重试', 'danger')
     return redirect(url_for('finance.receivable_detail', customer_id=customer_id))
 
 
@@ -256,7 +261,8 @@ def purchase_create():
             return redirect(url_for('finance.purchase_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
 
     suppliers = Supplier.query.order_by(Supplier.name).all()
     material_types = RawMaterialType.query.filter_by(is_active=True).order_by(RawMaterialType.name).all()
@@ -285,7 +291,8 @@ def purchase_edit(id):
             return redirect(url_for('finance.purchase_list'))
         except Exception as e:
             db.session.rollback()
-            flash(f'更新失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('更新失败，请检查输入后重试', 'danger')
 
     suppliers = Supplier.query.order_by(Supplier.name).all()
     material_types = RawMaterialType.query.filter_by(is_active=True).order_by(RawMaterialType.name).all()
@@ -306,7 +313,8 @@ def purchase_delete(id):
         flash('记录已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，请检查后重试', 'danger')
     return redirect(url_for('finance.purchase_list'))
 
 
@@ -332,7 +340,8 @@ def payment_made_create(supplier_id):
             return redirect(url_for('finance.payable_detail', supplier_id=supplier_id))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
     return render_template('finance/payment_made_form.html', supplier=supplier, payment=None)
 
 
@@ -350,7 +359,8 @@ def payment_made_delete(id):
         flash('付款记录已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，请检查后重试', 'danger')
     return redirect(url_for('finance.payable_detail', supplier_id=supplier_id))
 
 
@@ -378,7 +388,8 @@ def payable_adjust_create(supplier_id):
             return redirect(url_for('finance.payable_detail', supplier_id=supplier_id))
         except Exception as e:
             db.session.rollback()
-            flash(f'添加失败：{str(e)}', 'danger')
+            logging.error(f'操作异常: {e}')
+            flash('添加失败，请检查输入后重试', 'danger')
     return render_template('finance/payable_adjust_form.html', supplier=supplier)
 
 
@@ -396,7 +407,8 @@ def payable_adjust_delete(id):
         flash('应付调整已删除', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'删除失败：{str(e)}', 'danger')
+        logging.error(f'操作异常: {e}')
+        flash('删除失败，请检查后重试', 'danger')
     return redirect(url_for('finance.payable_detail', supplier_id=supplier_id))
 
 
