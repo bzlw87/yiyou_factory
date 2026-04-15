@@ -22,7 +22,7 @@
 </div></div>
 <div class="card shadow-sm"><div class="card-body p-0"><div class="table-responsive">
     <table class="table table-hover table-striped mb-0 align-middle">
-        <thead class="table-light"><tr><th>日期</th><th>单号</th><th>客户</th><th>缸次</th><th>板长</th><th>颜色</th><th>费率</th><th class="text-end">费用</th><th>操作</th></tr></thead>
+        <thead class="table-light"><tr><th>日期</th><th>单号</th><th>客户</th><th>缸次</th><th>板长</th><th>染色长度(m)</th><th>颜色</th><th>费率</th><th class="text-end">费用</th><th>操作</th></tr></thead>
         <tbody>
         {% for r in records %}
         <tr>
@@ -31,6 +31,7 @@
             <td>{{ r.customer.name }}</td>
             <td>{{ r.vat_batch or '' }}</td>
             <td>{{ r.board_length or '' }}</td>
+            <td>{{ r.dyeing_length or '' }}</td>
             <td>{{ r.color or '' }}</td>
             <td>{{ r.rate or '' }}</td>
             <td class="text-end">{{ r.total_cost or '' }}</td>
@@ -46,7 +47,7 @@
             </td>
         </tr>
         {% else %}
-        <tr><td colspan="9" class="text-center text-muted py-4">暂无记录</td></tr>
+        <tr><td colspan="10" class="text-center text-muted py-4">暂无记录</td></tr>
         {% endfor %}
         </tbody>
     </table>

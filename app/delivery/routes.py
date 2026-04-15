@@ -53,6 +53,7 @@ def index():
 
 @delivery_bp.route('/api/match-rate')
 @login_required
+@permission_required('delivery', 'view')
 def match_rate():
     """费率自动带入API：同客户+同来纱品种+同颜色"""
     customer_name = request.args.get('customer_name', '').strip()

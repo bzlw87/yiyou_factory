@@ -72,9 +72,22 @@ def user_create():
 def user_edit(id):
     user = User.query.get_or_404(id)
     if request.method == 'POST':
+        new_role = request.form.get('role', 'staff')
+        new_active = 'is_active_user' in request.form
+
+        # 管理员自锁防护：不允许降级或禁用最后一个活跃管理员
+        if user.role == 'admin':
+            active_admin_count = User.query.filter_by(role='admin', is_active_user=True).count()
+            if new_role != 'admin' and active_admin_count <= 1:
+                flash('至少保留一个管理员账号，无法降级', 'danger')
+                return redirect(url_for('admin.user_edit', id=id))
+            if not new_active and active_admin_count <= 1:
+                flash('至少保留一个活跃管理员账号，无法禁用', 'danger')
+                return redirect(url_for('admin.user_edit', id=id))
+
         user.display_name = request.form['display_name'].strip()
-        user.role = request.form.get('role', 'staff')
-        user.is_active_user = 'is_active_user' in request.form
+        user.role = new_role
+        user.is_active_user = new_active
         new_password = request.form.get('password', '').strip()
         if new_password:
             if len(new_password) < 6:

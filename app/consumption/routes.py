@@ -13,6 +13,7 @@ import logging
 
 @consumption_bp.route('/api/productions')
 @login_required
+@permission_required('consumption', 'view')
 def api_productions_by_customer():
     """API：根据客户名称返回该客户最近2个月的缸次"""
     from datetime import timedelta, date

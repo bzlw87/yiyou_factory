@@ -2,7 +2,7 @@
 工资模块 - 统一的员工工资管理，对齐纸质账本
 """
 from decimal import Decimal
-from datetime import date
+from datetime import date, datetime
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from app.wages import wages_bp
@@ -142,7 +142,7 @@ def record_create(emp_id):
                 deduction=Decimal(request.form['deduction']) if request.form.get('deduction') else 0,
                 net_wage=Decimal(request.form['net_wage']) if request.form.get('net_wage') else None,
                 is_paid='is_paid' in request.form,
-                paid_date=request.form['paid_date'] if request.form.get('paid_date') else None,
+                paid_date=datetime.strptime(request.form['paid_date'], '%Y-%m-%d').date() if request.form.get('paid_date') else None,
                 remark=request.form.get('remark', '').strip()
             )
             db.session.add(r)
@@ -176,7 +176,7 @@ def record_edit(id):
             r.deduction = Decimal(request.form['deduction']) if request.form.get('deduction') else 0
             r.net_wage = Decimal(request.form['net_wage']) if request.form.get('net_wage') else None
             r.is_paid = 'is_paid' in request.form
-            r.paid_date = request.form['paid_date'] if request.form.get('paid_date') else None
+            r.paid_date = datetime.strptime(request.form['paid_date'], '%Y-%m-%d').date() if request.form.get('paid_date') else None
             r.remark = request.form.get('remark', '').strip()
             log_operation('wages', r.id, '编辑', before=before, after=record_to_dict(r))
             db.session.commit()
