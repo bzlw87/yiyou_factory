@@ -151,7 +151,6 @@ def user_delete(id):
 
 @admin_bp.route('/customers')
 @login_required
-@admin_required
 def customer_list():
     customers = Customer.query.order_by(Customer.name).all()
     return render_template('admin/customer_list.html', customers=customers)
@@ -159,7 +158,6 @@ def customer_list():
 
 @admin_bp.route('/customers/create', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def customer_create():
     if request.method == 'POST':
         try:
@@ -221,7 +219,6 @@ def customer_delete(id):
 
 @admin_bp.route('/suppliers')
 @login_required
-@admin_required
 def supplier_list():
     suppliers = Supplier.query.order_by(Supplier.name).all()
     return render_template('admin/supplier_list.html', suppliers=suppliers)
@@ -229,7 +226,6 @@ def supplier_list():
 
 @admin_bp.route('/suppliers/create', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def supplier_create():
     if request.method == 'POST':
         try:
@@ -291,7 +287,6 @@ def supplier_delete(id):
 
 @admin_bp.route('/varieties')
 @login_required
-@admin_required
 def variety_list():
     varieties = YarnVariety.query.order_by(YarnVariety.name).all()
     return render_template('admin/variety_list.html', varieties=varieties)
@@ -299,7 +294,6 @@ def variety_list():
 
 @admin_bp.route('/varieties/create', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def variety_create():
     if request.method == 'POST':
         try:
@@ -357,7 +351,6 @@ def variety_delete(id):
 
 @admin_bp.route('/material-types')
 @login_required
-@admin_required
 def material_type_list():
     types = RawMaterialType.query.order_by(RawMaterialType.name).all()
     return render_template('admin/material_type_list.html', types=types)
@@ -365,7 +358,6 @@ def material_type_list():
 
 @admin_bp.route('/material-types/create', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def material_type_create():
     if request.method == 'POST':
         try:
@@ -425,7 +417,6 @@ def material_type_delete(id):
 
 @admin_bp.route('/wage-rates')
 @login_required
-@admin_required
 def wage_rate_list():
     rates = WageRate.query.order_by(WageRate.created_at.desc()).all()
     return render_template('admin/wage_rates.html', rates=rates)
@@ -433,7 +424,6 @@ def wage_rate_list():
 
 @admin_bp.route('/wage-rates/create', methods=['GET', 'POST'])
 @login_required
-@admin_required
 def wage_rate_create():
     if request.method == 'POST':
         try:

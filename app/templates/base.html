@@ -76,17 +76,23 @@
                            href="{{ url_for('wages.employee_list') }}"><i class="bi bi-wallet2"></i> 工资管理</a>
                     </li>
                     {% endif %}
-                    {% if current_user.is_admin %}
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if request.endpoint and request.endpoint.startswith('admin') %}active{% endif %}"
-                           href="#" data-bs-toggle="dropdown"><i class="bi bi-shield-lock"></i> 系统管理</a>
+                        <a class="nav-link dropdown-toggle {% if request.endpoint and request.endpoint in ['admin.customer_list','admin.customer_create','admin.customer_edit','admin.supplier_list','admin.supplier_create','admin.supplier_edit','admin.variety_list','admin.variety_create','admin.variety_edit','admin.material_type_list','admin.material_type_create','admin.material_type_edit','admin.wage_rate_list','admin.wage_rate_create','admin.wage_rate_edit'] %}active{% endif %}"
+                           href="#" data-bs-toggle="dropdown"><i class="bi bi-folder"></i> 工厂档案</a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('admin.user_list') }}"><i class="bi bi-people"></i> 用户管理</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin.customer_list') }}"><i class="bi bi-person-rolodex"></i> 客户管理</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin.supplier_list') }}"><i class="bi bi-shop"></i> 供应商管理</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin.variety_list') }}"><i class="bi bi-tags"></i> 品种管理</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin.material_type_list') }}"><i class="bi bi-palette"></i> 原材料品种</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin.wage_rate_list') }}"><i class="bi bi-cash-stack"></i> 工资费率</a></li>
+                        </ul>
+                    </li>
+                    {% if current_user.is_admin %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint and request.endpoint in ['admin.user_list','admin.user_create','admin.user_edit','admin.user_permissions','admin.user_delete','admin.operation_log_list'] %}active{% endif %}"
+                           href="#" data-bs-toggle="dropdown"><i class="bi bi-shield-lock"></i> 系统管理</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ url_for('admin.user_list') }}"><i class="bi bi-people"></i> 用户管理</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('admin.operation_log_list') }}"><i class="bi bi-journal-text"></i> 操作日志</a></li>
                         </ul>

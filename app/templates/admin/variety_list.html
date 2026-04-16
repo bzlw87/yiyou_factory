@@ -14,11 +14,13 @@
             <td>{{ v.name }}</td>
             <td>{% if v.is_active %}<span class="badge bg-success">启用</span>{% else %}<span class="badge bg-secondary">停用</span>{% endif %}</td>
             <td class="text-nowrap">
+                {% if current_user.is_admin %}
                 <a href="{{ url_for('admin.variety_edit', id=v.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
                 <form method="POST" action="{{ url_for('admin.variety_delete', id=v.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                 </form>
+                {% endif %}
             </td>
         </tr>
         {% else %}
