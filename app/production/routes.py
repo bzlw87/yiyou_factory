@@ -18,12 +18,15 @@ def index():
     page = request.args.get('page', 1, type=int)
     keyword = request.args.get('keyword', '', type=str).strip()
     vat = request.args.get('vat', '', type=str).strip()
+    show_completed = request.args.get('show_completed', '', type=str).strip()
 
     query = ProductionOrder.query.join(Customer)
     if keyword:
         query = query.filter(Customer.name.contains(keyword))
     if vat:
         query = query.filter(ProductionOrder.vat_number.contains(vat))
+    if show_completed != 'yes':
+        query = query.filter(ProductionOrder.is_completed == False)
 
     pagination = query.order_by(ProductionOrder.created_at.desc()).paginate(
         page=page, per_page=20, error_out=False)
@@ -31,7 +34,28 @@ def index():
     return render_template('production/index.html',
                            records=pagination.items,
                            pagination=pagination,
-                           keyword=keyword, vat=vat)
+                           keyword=keyword, vat=vat,
+                           show_completed=show_completed)
+
+
+@production_bp.route('/toggle-complete/<int:id>', methods=['POST'])
+@login_required
+@permission_required('production', 'edit')
+def toggle_complete(id):
+    record = ProductionOrder.query.get_or_404(id)
+    try:
+        before = record_to_dict(record)
+        record.is_completed = not record.is_completed
+        log_operation('production', record.id, '编辑', before=before, after=record_to_dict(record))
+        db.session.commit()
+        status = '已完成' if record.is_completed else '进行中'
+        flash(f'缸次 {record.vat_number} 已标记为{status}', 'success')
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f'操作异常: {e}')
+        flash('操作失败，请重试', 'danger')
+    show_completed = request.form.get('show_completed', '')
+    return redirect(url_for('production.index', show_completed=show_completed))
 
 
 @production_bp.route('/create', methods=['GET', 'POST'])

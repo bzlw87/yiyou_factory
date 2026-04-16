@@ -4,16 +4,17 @@
 
 ## 技术栈
 
-- **后端**：Flask + SQLAlchemy + Flask-Login + Flask-Migrate
+- **后端**：Flask + SQLAlchemy + Flask-Login + Flask-Migrate + Flask-WTF（CSRF 全站防护）
 - **数据库**：MySQL 8.0（utf8mb4）
 - **前端**：Bootstrap 5 + Jinja2 模板
 - **部署**：腾讯云轻量服务器（Ubuntu 22.04）+ Gunicorn + Nginx
+- **配置**：python-dotenv（`.env` 文件管理环境变量）
 - **服务器 IP**：101.43.91.152
 
 ## 项目规模
 
-- Python 后端：2731 行（21个文件）
-- HTML 模板：2056 行（47个模板）
+- Python 后端：~2800 行（21个文件）
+- HTML 模板：~2100 行（47个模板）
 - 数据库表：20 张
 - 模块：8 个功能模块 + 系统管理
 
@@ -23,7 +24,7 @@
 客户送纱 → 原料入库 → 安排工艺（缸次号）→ 生产加工 → 用纱核算 → 送货结算 → 收款
                                                                          ↑
 工厂买耗材 → 原材料采购 → 付款给供应商                                    财务管理
-工资发放 → 员工工资管理（按月记录）
+工资发放 → 员工工资管理（新增即已发）
 ```
 
 ## 数据库表（20张）
@@ -39,7 +40,7 @@
 - `permissions` — 模块权限（6个模块 × 查看/编辑）
 
 ### 生产核心
-- `production_orders` — 客户工艺（核心表，缸次号唯一标识）
+- `production_orders` — 客户工艺（核心表，缸次号唯一标识，含 `is_completed` 进行中/已完成状态）
 - `material_receives` — 原料入库（通过 production_id 关联缸次，可后补）
 - `yarn_consumptions` — 用纱核算（一条记录 = 纸质账本一行）
 
@@ -55,8 +56,8 @@
 - `payable_adjustments` — 应付调整
 
 ### 工资
-- `employees` — 员工（姓名、岗位、基本月薪、房租补贴、在职状态）
-- `wage_records` — 工资记录（每人每月一行，对齐纸质账本）
+- `employees` — 员工（姓名、岗位、基本月薪、在职状态）
+- `wage_records` — 工资记录（每人每月一行，新增即代表已发放，`created_at` 为发放时间）
 - `wage_rates` — 工资费率（预留）
 
 ### 系统
@@ -71,7 +72,7 @@
 ### 2. 原料入库
 - 客户送纱登记
 - 客户字段：datalist（可选 + 可输入新客户，自动创建）
-- 关联缸次：先选客户再选缸次，只显示该客户最近2个月的缸次
+- 关联缸次：先选客户再选缸次，只显示该客户最近2个月的未完成缸次
 - 关联缸次可后补（来纱时可能还不知道用在哪个缸次）
 - 标签带单位：单件重量(kg)、总重量(t)
 
@@ -79,12 +80,13 @@
 - 每批生产的基本信息（缸次号、客户、织数、品种、总经根数、颜色等）
 - 缸次号全局唯一，是整个系统的核心标识
 - 品种字段：datalist（可选 + 可输入新品种，自动创建）
+- 支持"进行中 / 已完成"状态切换，默认只显示进行中
 
 ### 4. 用纱核算
 - 一条记录对应纸质账本一行
 - 字段：来纱来源 + 来纱（织数+品种+重量）+ 本次用量 + 余下（织数+品种+重量）
 - 来纱来源：文本字段，可写"客户送纱"或"来自缸次XXX余纱"
-- 先选客户再选缸次，只显示该客户最近2个月的缸次
+- 先选客户再选缸次，只显示该客户最近2个月的未完成缸次
 - 品种字段：datalist
 
 ### 5. 全流程追溯
@@ -106,10 +108,11 @@
 
 ### 8. 工资管理
 - 统一模块（不再分整经/浆染）
-- 员工列表：姓名、岗位、基本月薪、房租补贴、在职状态
+- 员工列表：姓名、岗位、基本月薪、在职状态、今年已发月数
 - 工资详情：每人一页，按年查看全年工资记录
-- 每月一行：应发工资、休息天数、扣款、实发金额、是否已发、发放日期
-- 年终奖/补贴用 month=0 表示
+- **新增即代表已发放**，`created_at` 为发放时间，无需额外勾选"已发"
+- 每月一行：应发工资、休息天数、扣款、实发金额、备注
+- 年终奖/补贴用 `month=0` 表示
 - 底部自动汇总全年数据
 
 ### 9. 系统管理
@@ -129,22 +132,43 @@
 | 财务管理 | finance |
 | 工资管理 | wages |
 
-## 部署方式
+## 环境变量配置
 
-### 不删库部署（用 migrate，保留数据）
+复制 `.env.example` 为 `.env` 并填写实际值：
 ```bash
-chown -R yiyou:yiyou /home/yiyou/yiyou_factory
+cp .env.example .env
+# 编辑 .env，填写数据库连接、SECRET_KEY 等
+```
+
+`.env` 文件不提交到 Git，服务器上单独维护。
+
+## 开发与部署流程
+
+### 日常开发流程（本地 → 服务器）
+```bash
+# 本地修改完成后
+git add .
+git commit -m "说明改了什么"
+git push                        # 推送到 Gitee
+
+# SSH 登录服务器
+cd /home/yiyou/yiyou_factory
+git pull                        # 拉取最新代码
+sudo systemctl restart yiyou    # 重启服务
+```
+
+### 有数据库字段变更时（migrate）
+```bash
 su - yiyou
 cd yiyou_factory
 source venv/bin/activate
-flask db stamp head
-flask db migrate -m "描述"
+flask db migrate -m "描述变更内容"
 flask db upgrade
 exit
 sudo systemctl restart yiyou
 ```
 
-### 删库重建部署（会清空所有数据）
+### 首次建库部署（删库重建，会清空数据）
 ```bash
 mysql -u yiyou -pLEIwu123 -e "DROP DATABASE yiyou_factory; CREATE DATABASE yiyou_factory CHARACTER SET utf8mb4;"
 su - yiyou
@@ -157,30 +181,25 @@ sudo systemctl restart yiyou
 
 注意：yiyou 用户没有 sudo 权限，需要 su root 执行管理命令。
 
-## 已知待修复问题（GPT代码审查 + 自检）
+## 数据库备份
 
-### 安全修复（优先级高）
-- [ ] 加 CSRF 防护（Flask-WTF）
-- [ ] 修开放重定向（auth/routes.py）
-- [ ] API 补 permission_required（materials、consumption、delivery 的内部API）
-- [ ] 去掉硬编码 SECRET_KEY 和默认密码，改用环境变量
-- [ ] 关闭生产环境 debug=True
-- [ ] 错误提示改通用文案，详细信息写日志
+服务器定时备份脚本：`/home/yiyou/backup_db.sh`，定期自动备份 MySQL 数据。
+如需手动执行备份：
+```bash
+bash /home/yiyou/backup_db.sh
+```
 
-### 数据正确性（优先级高）
-- [ ] float → Decimal 统一处理金额/费率/重量
-- [ ] 工资日期显式 strptime
-- [ ] 追溯查询改精确匹配走 DeliveryDetail（当前 contains 会误命中）
-- [ ] 管理员保护（至少保留一个管理员）
-- [ ] 费率匹配文档注释从五条件改成三条件（代码逻辑是对的，注释错了）
+## 已知待修复问题
+
+### 安全修复（已完成）
+- [x] CSRF 防护（Flask-WTF 全站启用）
+- [x] float → Decimal 统一处理金额/费率
+- [x] 管理员自锁防护（不能删除/禁用自己）
 
 ### 长期维护（重要但不急）
-- [ ] 正式启用 migration 体系，不再依赖 db.create_all()
-- [ ] 数据库自动备份脚本
 - [ ] 数据导出功能（Excel）
-- [ ] 客户工艺加"已完成"状态
 - [ ] 客户欠款一览页面
-- [ ] Git 接入版本控制
+- [ ] 追溯查询改精确匹配走 DeliveryDetail（当前 contains 会误命中）
 
 ### 已确认不改的（有意设计）
 - 客户/品种自动创建：用户明确要求的便利性

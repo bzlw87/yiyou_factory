@@ -2,6 +2,7 @@
 数据库初始化脚本 - 首次运行时执行
 python init_db.py
 """
+import os
 from app import create_app, db
 from app.models import User, Permission, WageRate
 
@@ -14,9 +15,10 @@ MODULES = {
     'wages': '工资管理',
 }
 
-app = create_app('development')
+app = create_app(os.environ.get('FLASK_CONFIG', 'development'))
 
 with app.app_context():
+    # 首次建库使用，后续字段变更请用 flask db migrate
     db.create_all()
     print('✅ 数据库表创建成功！')
 

@@ -169,6 +169,7 @@ class ProductionOrder(db.Model):
     total_ends = db.Column(db.Integer)            # 总经根数
     planned_length = db.Column(db.Numeric(12, 2)) # 设定板长(m)
     color = db.Column(db.String(50))              # 加工颜色
+    is_completed = db.Column(db.Boolean, default=False)              # 是否已完成，默认进行中
     remark = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=_now_cst)
     updated_at = db.Column(db.DateTime, default=_now_cst, onupdate=_now_cst)

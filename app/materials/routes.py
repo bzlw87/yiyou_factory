@@ -61,7 +61,8 @@ def api_productions_by_customer():
     two_months_ago = date.today() - timedelta(days=60)
     records = ProductionOrder.query.filter(
         ProductionOrder.customer_id == c.id,
-        ProductionOrder.created_at >= two_months_ago
+        ProductionOrder.created_at >= two_months_ago,
+        ProductionOrder.is_completed == False
     ).order_by(ProductionOrder.created_at.desc()).all()
     return jsonify([{
         'id': r.id,

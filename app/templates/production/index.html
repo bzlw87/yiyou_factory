@@ -4,17 +4,25 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <h4 class="mb-0"><i class="bi bi-gear"></i> 客户工艺</h4>
-    {% if current_user.has_permission('production', 'edit') %}
-    <a href="{{ url_for('production.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增工艺</a>
-    {% endif %}
+    <div class="d-flex gap-2">
+        {% if show_completed == 'yes' %}
+        <a href="{{ url_for('production.index', keyword=keyword, vat=vat) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-funnel"></i> 只看进行中</a>
+        {% else %}
+        <a href="{{ url_for('production.index', keyword=keyword, vat=vat, show_completed='yes') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-list-ul"></i> 显示全部</a>
+        {% endif %}
+        {% if current_user.has_permission('production', 'edit') %}
+        <a href="{{ url_for('production.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增工艺</a>
+        {% endif %}
+    </div>
 </div>
 <div class="card shadow-sm mb-3"><div class="card-body py-2">
     <form method="GET" class="row g-2 align-items-end">
+        <input type="hidden" name="show_completed" value="{{ show_completed }}">
         <div class="col-6 col-md-3"><input type="text" name="keyword" class="form-control form-control-sm" placeholder="客户名称" value="{{ keyword }}"></div>
         <div class="col-6 col-md-3"><input type="text" name="vat" class="form-control form-control-sm" placeholder="缸次号" value="{{ vat }}"></div>
         <div class="col-12 col-md-3">
             <button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-search"></i> 搜索</button>
-            <a href="{{ url_for('production.index') }}" class="btn btn-outline-secondary btn-sm">重置</a>
+            <a href="{{ url_for('production.index', show_completed=show_completed) }}" class="btn btn-outline-secondary btn-sm">重置</a>
         </div>
     </form>
 </div></div>
@@ -23,8 +31,8 @@
         <thead class="table-light"><tr><th>缸次号</th><th>客户</th><th>织数</th><th>品种</th><th>总经根数</th><th>板长(m)</th><th>颜色</th><th>备注</th><th>操作</th></tr></thead>
         <tbody>
         {% for r in records %}
-        <tr>
-            <td><strong>{{ r.vat_number }}</strong></td>
+        <tr {% if r.is_completed %}class="text-muted"{% endif %}>
+            <td><strong {% if r.is_completed %}class="text-muted"{% endif %}>{{ r.vat_number }}</strong></td>
             <td>{{ r.customer.name }}</td>
             <td>{{ r.yarn_count or '' }}</td>
             <td>{{ r.variety.name if r.variety else '' }}</td>
@@ -34,6 +42,15 @@
             <td><small class="text-muted">{{ r.remark or '' }}</small></td>
             <td class="text-nowrap">
                 {% if current_user.has_permission('production', 'edit') %}
+                <form method="POST" action="{{ url_for('production.toggle_complete', id=r.id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="show_completed" value="{{ show_completed }}">
+                    {% if r.is_completed %}
+                    <button class="btn btn-sm btn-outline-warning" title="恢复进行中"><i class="bi bi-arrow-counterclockwise"></i></button>
+                    {% else %}
+                    <button class="btn btn-sm btn-outline-success" title="标记完成"><i class="bi bi-check-lg"></i></button>
+                    {% endif %}
+                </form>
                 <a href="{{ url_for('production.edit', id=r.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
                 <form method="POST" action="{{ url_for('production.delete', id=r.id) }}" class="d-inline" onsubmit="return confirm('确定删除？')">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -48,5 +65,5 @@
         </tbody>
     </table>
 </div></div></div>
-{{ render_pagination(pagination, 'production.index') }}
+{{ render_pagination(pagination, 'production.index', show_completed=show_completed, keyword=keyword, vat=vat) }}
 {% endblock %}
