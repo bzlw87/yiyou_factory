@@ -2,7 +2,7 @@
 工资模块 - 统一的员工工资管理，对齐纸质账本
 """
 from decimal import Decimal
-from datetime import date, datetime
+from datetime import date
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from app.wages import wages_bp
@@ -28,19 +28,14 @@ def employee_list():
     positions = db.session.query(Employee.position).distinct().order_by(Employee.position).all()
     positions = [p[0] for p in positions]
 
-    # 每人本年已发月数
+    # 每人本年已发月数（记录存在即代表已发）
     current_year = date.today().year
     for emp in employees:
         emp.paid_months = WageRecord.query.filter(
             WageRecord.employee_id == emp.id,
             WageRecord.year == current_year,
             WageRecord.month >= 1,
-            WageRecord.is_paid == True
-        ).count()
-        emp.total_months = WageRecord.query.filter(
-            WageRecord.employee_id == emp.id,
-            WageRecord.year == current_year,
-            WageRecord.month >= 1, WageRecord.month <= 12
+            WageRecord.month <= 12
         ).count()
 
     return render_template('wages/employee_list.html',
@@ -110,7 +105,7 @@ def wage_detail(emp_id):
     total_gross = sum(float(r.gross_wage or 0) for r in records if r.month >= 1)
     total_deduction = sum(float(r.deduction or 0) for r in records if r.month >= 1)
     total_net = sum(float(r.net_wage or 0) for r in records)
-    paid_count = sum(1 for r in records if r.is_paid and r.month >= 1 and r.month <= 12)
+    paid_count = sum(1 for r in records if r.month >= 1 and r.month <= 12)
 
     # 可选年份列表
     years = db.session.query(WageRecord.year).filter_by(employee_id=emp_id)\
@@ -141,8 +136,6 @@ def record_create(emp_id):
                 rest_days=int(request.form['rest_days']) if request.form.get('rest_days') else None,
                 deduction=Decimal(request.form['deduction']) if request.form.get('deduction') else 0,
                 net_wage=Decimal(request.form['net_wage']) if request.form.get('net_wage') else None,
-                is_paid='is_paid' in request.form,
-                paid_date=datetime.strptime(request.form['paid_date'], '%Y-%m-%d').date() if request.form.get('paid_date') else None,
                 remark=request.form.get('remark', '').strip()
             )
             db.session.add(r)
@@ -175,8 +168,6 @@ def record_edit(id):
             r.rest_days = int(request.form['rest_days']) if request.form.get('rest_days') else None
             r.deduction = Decimal(request.form['deduction']) if request.form.get('deduction') else 0
             r.net_wage = Decimal(request.form['net_wage']) if request.form.get('net_wage') else None
-            r.is_paid = 'is_paid' in request.form
-            r.paid_date = datetime.strptime(request.form['paid_date'], '%Y-%m-%d').date() if request.form.get('paid_date') else None
             r.remark = request.form.get('remark', '').strip()
             log_operation('wages', r.id, '编辑', before=before, after=record_to_dict(r))
             db.session.commit()

@@ -416,7 +416,8 @@ class WageRecord(db.Model):
     """
     工资记录 - 每人每月一行，对应纸质账本
 
-    字段：月份、应发工资、休息天数、扣款、实发金额、是否已发、发放日期
+    新增即代表已发放，created_at 即发放时间。
+    字段：月份、应发工资、休息天数、扣款、实发金额、备注
     """
     __tablename__ = 'wage_records'
 
@@ -428,10 +429,8 @@ class WageRecord(db.Model):
     rest_days = db.Column(db.Integer)                             # 休息天数
     deduction = db.Column(db.Numeric(10, 2), default=0)          # 扣款
     net_wage = db.Column(db.Numeric(10, 2))                      # 实发金额
-    is_paid = db.Column(db.Boolean, default=False)               # 是否已发
-    paid_date = db.Column(db.Date)                                # 发放日期
     remark = db.Column(db.Text)                                   # 备注（合发说明、年终奖类型等）
-    created_at = db.Column(db.DateTime, default=_now_cst)
+    created_at = db.Column(db.DateTime, default=_now_cst)        # 记录创建时间即发放时间
 
     __table_args__ = (db.UniqueConstraint('employee_id', 'year', 'month', name='uq_emp_year_month'),)
 

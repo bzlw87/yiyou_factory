@@ -34,14 +34,6 @@
                 <div class="col-md-6"><label class="form-label">实发金额</label>
                     <input type="number" step="0.01" name="net_wage" class="form-control" value="{{ record.net_wage if record else '' }}">
                     <small class="text-muted">应发 - 扣款，可手动调整</small></div>
-                <div class="col-md-6">
-                    <div class="form-check mt-4">
-                        <input type="checkbox" name="is_paid" class="form-check-input" id="isPaid" {% if record and record.is_paid %}checked{% endif %}>
-                        <label class="form-check-label" for="isPaid">已发放</label>
-                    </div>
-                </div>
-                <div class="col-md-6"><label class="form-label">发放日期</label>
-                    <input type="date" name="paid_date" class="form-control" value="{{ record.paid_date if record and record.paid_date else '' }}"></div>
                 <div class="col-12"><label class="form-label">备注</label>
                     <textarea name="remark" class="form-control" rows="2" placeholder="如：5+6月合发、预支已发、产量奖等">{{ record.remark if record else '' }}</textarea></div>
             </div>

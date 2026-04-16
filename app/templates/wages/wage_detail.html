@@ -29,7 +29,7 @@
 <div class="card shadow-sm">
     <div class="card-body p-0"><div class="table-responsive">
         <table class="table table-hover mb-0 align-middle">
-            <thead class="table-light"><tr><th>月份</th><th>应发工资</th><th>休息天数</th><th>扣款</th><th class="text-end">实发金额</th><th>发放状态</th><th>发放日期</th><th>备注</th><th>操作</th></tr></thead>
+            <thead class="table-light"><tr><th>月份</th><th>应发工资</th><th>休息天数</th><th>扣款</th><th class="text-end">实发金额</th><th>备注</th><th>操作</th></tr></thead>
             <tbody>
             {% for r in records %}
             <tr {% if r.month == 0 %}class="table-warning"{% endif %}>
@@ -38,8 +38,6 @@
                 <td>{% if r.rest_days %}{{ r.rest_days }}天{% endif %}</td>
                 <td>{% if r.deduction and r.deduction > 0 %}{{ r.deduction }}{% endif %}</td>
                 <td class="text-end fw-bold">{{ r.net_wage or '' }}</td>
-                <td>{% if r.is_paid %}<span class="badge bg-success">已发</span>{% else %}<span class="badge bg-danger">未发</span>{% endif %}</td>
-                <td>{{ r.paid_date or '' }}</td>
                 <td><small class="text-muted">{{ r.remark or '' }}</small></td>
                 <td class="text-nowrap">
                     {% if current_user.has_permission('wages', 'edit') %}
@@ -52,7 +50,7 @@
                 </td>
             </tr>
             {% else %}
-            <tr><td colspan="9" class="text-center text-muted py-4">{{ year }}年暂无工资记录</td></tr>
+            <tr><td colspan="7" class="text-center text-muted py-4">{{ year }}年暂无工资记录</td></tr>
             {% endfor %}
             </tbody>
             {% if records %}
@@ -63,8 +61,7 @@
                     <td></td>
                     <td>{{ '%.2f' % total_deduction }}</td>
                     <td class="text-end fw-bold">{{ '%.2f' % total_net }}</td>
-                    <td><span class="text-success">{{ paid_count }}</span>/12月</td>
-                    <td colspan="3"></td>
+                    <td colspan="2"><span class="text-success">已发{{ paid_count }}个月</span></td>
                 </tr>
             </tfoot>
             {% endif %}
