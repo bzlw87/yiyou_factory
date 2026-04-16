@@ -20,7 +20,6 @@
         <div class="row text-center">
             <div class="col"><small class="text-muted">岗位</small><div class="fw-bold">{{ emp.position }}</div></div>
             <div class="col"><small class="text-muted">基本月薪</small><div class="fw-bold">{% if emp.base_salary %}{{ emp.base_salary }}元{% else %}计件{% endif %}</div></div>
-            <div class="col"><small class="text-muted">房租补贴</small><div class="fw-bold">{% if emp.rent_subsidy and emp.rent_subsidy > 0 %}{{ emp.rent_subsidy }}元/年{% else %}无{% endif %}</div></div>
             <div class="col"><small class="text-muted">状态</small><div>{% if emp.is_active %}<span class="badge bg-success">在职</span>{% else %}<span class="badge bg-secondary">离职</span>{% endif %}</div></div>
         </div>
     </div>
