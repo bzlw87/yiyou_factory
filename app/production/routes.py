@@ -4,6 +4,7 @@
 from decimal import Decimal
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required
+from sqlalchemy import or_
 from app.production import production_bp
 from app.models import ProductionOrder, Customer, YarnVariety
 from app.helpers import permission_required, log_operation, record_to_dict, resolve_variety, resolve_customer
@@ -151,15 +152,19 @@ def trace():
     vat = request.args.get('vat', '', type=str).strip()
     result = None
     if vat:
-        from app.models import MaterialReceive, YarnConsumption, DeliveryOrder
+        from app.models import MaterialReceive, YarnConsumption, DeliveryOrder, DeliveryDetail
         order = ProductionOrder.query.filter_by(vat_number=vat).first()
         if order:
             materials = MaterialReceive.query.filter_by(production_id=order.id)\
                 .order_by(MaterialReceive.receive_date).all()
             consumption = YarnConsumption.query.filter_by(production_id=order.id).first()
+            # 送货追溯：优先按明细表精确匹配缸次，同时兼容历史主表 vat_batch 记录
+            delivery_ids_by_detail = db.session.query(DeliveryDetail.delivery_id).filter(
+                DeliveryDetail.vat_number == vat
+            )
             deliveries = DeliveryOrder.query.filter(
-                DeliveryOrder.vat_batch.contains(vat)
-            ).order_by(DeliveryOrder.delivery_date).all()
+                or_(DeliveryOrder.id.in_(delivery_ids_by_detail), DeliveryOrder.vat_batch == vat)
+            ).order_by(DeliveryOrder.delivery_date, DeliveryOrder.id).all()
             result = {
                 'order': order,
                 'materials': materials,
