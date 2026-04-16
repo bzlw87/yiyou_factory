@@ -4,20 +4,19 @@
 <h4 class="mb-3"><i class="bi bi-arrow-up-circle"></i> 应付账款汇总</h4>
 <div class="card shadow-sm"><div class="card-body p-0"><div class="table-responsive">
     <table class="table table-hover table-striped mb-0 align-middle">
-        <thead class="table-light"><tr><th>供应商</th><th class="text-end">采购合计</th><th class="text-end">手动调整</th><th class="text-end">应付总额</th><th class="text-end">已付金额</th><th class="text-end">欠款余额</th><th>操作</th></tr></thead>
+        <thead class="table-light"><tr><th>供应商</th><th class="text-end">采购合计</th><th class="text-end">应付总额</th><th class="text-end">已付金额</th><th class="text-end">欠款余额</th><th>操作</th></tr></thead>
         <tbody>
         {% for d in data %}
         <tr>
             <td>{{ d.supplier.name }}</td>
             <td class="text-end">{{ '%.2f' % d.total_purchase }}</td>
-            <td class="text-end {% if d.total_adjust > 0 %}text-info{% endif %}">{{ '%.2f' % d.total_adjust }}</td>
             <td class="text-end fw-bold">{{ '%.2f' % d.total_payable }}</td>
             <td class="text-end text-success">{{ '%.2f' % d.total_paid }}</td>
             <td class="text-end {% if d.balance > 0 %}text-danger fw-bold{% endif %}">{{ '%.2f' % d.balance }}</td>
             <td><a href="{{ url_for('finance.payable_detail', supplier_id=d.supplier.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> 明细</a></td>
         </tr>
         {% else %}
-        <tr><td colspan="7" class="text-center text-muted py-4">暂无应付数据</td></tr>
+        <tr><td colspan="6" class="text-center text-muted py-4">暂无应付数据</td></tr>
         {% endfor %}
         </tbody>
     </table>

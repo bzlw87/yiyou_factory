@@ -12,10 +12,9 @@
 </div>
 <div class="row g-3 mb-3">
     <div class="col-6 col-md-3"><div class="card text-center"><div class="card-body py-2"><h5 class="text-primary mb-0">{{ '%.2f' % total_purchase }}</h5><small class="text-muted">采购合计</small></div></div></div>
-    <div class="col-6 col-md-2"><div class="card text-center"><div class="card-body py-2"><h5 class="text-info mb-0">{{ '%.2f' % total_adjust }}</h5><small class="text-muted">手动调整</small></div></div></div>
     <div class="col-6 col-md-3"><div class="card text-center"><div class="card-body py-2"><h5 class="mb-0">{{ '%.2f' % total_payable }}</h5><small class="text-muted">应付总额</small></div></div></div>
-    <div class="col-6 col-md-2"><div class="card text-center"><div class="card-body py-2"><h5 class="text-success mb-0">{{ '%.2f' % total_paid }}</h5><small class="text-muted">已付金额</small></div></div></div>
-    <div class="col-12 col-md-2"><div class="card text-center"><div class="card-body py-2"><h5 class="{% if balance > 0 %}text-danger{% endif %} mb-0">{{ '%.2f' % balance }}</h5><small class="text-muted">欠款余额</small></div></div></div>
+    <div class="col-6 col-md-3"><div class="card text-center"><div class="card-body py-2"><h5 class="text-success mb-0">{{ '%.2f' % total_paid }}</h5><small class="text-muted">已付金额</small></div></div></div>
+    <div class="col-6 col-md-3"><div class="card text-center"><div class="card-body py-2"><h5 class="{% if balance > 0 %}text-danger{% endif %} mb-0">{{ '%.2f' % balance }}</h5><small class="text-muted">欠款余额</small></div></div></div>
 </div>
 <div class="row g-3">
     <div class="col-lg-7">
