@@ -42,7 +42,6 @@ def login():
 
         # 登录成功，记住用户状态
         login_user(user, remember=request.form.get('remember', False))
-        flash(f'欢迎回来，{user.display_name}！', 'success')
 
         # 如果用户之前想访问某个页面但被要求登录，登录后跳转回那个页面
         next_page = request.args.get('next')
