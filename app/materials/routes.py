@@ -1,8 +1,10 @@
 """
 原料入库路由
 """
-from datetime import datetime
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from io import BytesIO
+from datetime import datetime, date
+import openpyxl
+from flask import render_template, request, redirect, url_for, flash, jsonify, send_file
 from flask_login import login_required
 from app.materials import materials_bp
 from app.models import MaterialReceive, Customer, YarnVariety, ProductionOrder
@@ -44,6 +46,57 @@ def index():
                            pagination=pagination,
                            keyword=keyword,
                            date_from=date_from, date_to=date_to)
+
+
+@materials_bp.route('/export')
+@login_required
+@permission_required('materials', 'view')
+def export():
+    keyword = request.args.get('keyword', '', type=str).strip()
+    date_from = request.args.get('date_from', '', type=str).strip()
+    date_to = request.args.get('date_to', '', type=str).strip()
+
+    query = MaterialReceive.query.join(Customer)
+    if keyword:
+        query = query.filter(Customer.name.contains(keyword))
+    if date_from:
+        try:
+            d = datetime.strptime(date_from, '%Y-%m-%d').date()
+            query = query.filter(MaterialReceive.receive_date >= d)
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            d = datetime.strptime(date_to, '%Y-%m-%d').date()
+            query = query.filter(MaterialReceive.receive_date <= d)
+        except ValueError:
+            pass
+
+    records = query.order_by(MaterialReceive.receive_date.desc()).all()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '原料入库'
+    ws.append(['日期', '客户', '织数', '品种', '件数', '单件重量', '总重量', '关联缸次'])
+    for r in records:
+        ws.append([
+            str(r.receive_date) if r.receive_date else '',
+            r.customer.name if r.customer else '',
+            r.yarn_count or '',
+            r.variety.name if r.variety else '',
+            r.quantity or '',
+            r.unit_weight or '',
+            r.total_weight or '',
+            r.production_order.vat_number if r.production_order else '',
+        ])
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output,
+                     download_name=f'原料入库_{date.today().strftime("%Y%m%d")}.xlsx',
+                     as_attachment=True,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 @materials_bp.route('/api/productions')

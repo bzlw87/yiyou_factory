@@ -9,6 +9,7 @@
                 {% for y in years %}<option value="{{ y }}" {% if year == y %}selected{% endif %}>{{ y }}年</option>{% endfor %}
             </select>
         </form>
+        <a href="{{ url_for('wages.export', emp_id=emp.id, year=year) }}" class="btn btn-outline-success btn-sm"><i class="bi bi-download"></i> 导出Excel</a>
         {% if current_user.has_permission('wages', 'edit') %}
         <a href="{{ url_for('wages.record_create', emp_id=emp.id, year=year) }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> 新增月工资</a>
         {% endif %}
@@ -66,6 +67,51 @@
             {% endif %}
         </table>
     </div></div>
+</div>
+<div class="card shadow-sm mt-3">
+    <div class="card-header py-2" style="cursor:pointer" data-bs-toggle="collapse" data-bs-target="#salaryLogCollapse">
+        <i class="bi bi-clock-history"></i> 调薪/变更记录
+        <span class="float-end text-muted small">点击展开</span>
+    </div>
+    <div class="collapse" id="salaryLogCollapse">
+        <div class="card-body p-0">
+            {% if salary_logs %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0 align-middle">
+                    <thead class="table-light"><tr><th>时间</th><th>操作人</th><th>操作</th><th>变更内容</th></tr></thead>
+                    <tbody>
+                    {% for log in salary_logs %}
+                    <tr>
+                        <td class="text-nowrap text-muted small">{{ log.operated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ log.user.display_name if log.user else '-' }}</td>
+                        <td>
+                            {% if log.action == '新增' %}<span class="badge bg-success">新增</span>
+                            {% elif log.action == '编辑' %}<span class="badge bg-primary">编辑</span>
+                            {% else %}<span class="badge bg-danger">删除</span>{% endif %}
+                        </td>
+                        <td>
+                            <small>
+                            {% if log.diffs %}
+                                {% for d in log.diffs %}
+                                    <span class="text-muted">{{ d.field }}：</span><span class="text-danger">{{ d.old if d.old is not none else '-' }}</span> → <span class="text-success">{{ d.new if d.new is not none else '-' }}</span>{% if not loop.last %}；{% endif %}
+                                {% endfor %}
+                            {% elif log.action == '新增' %}
+                                <span class="text-muted">员工已创建</span>
+                            {% elif log.action == '删除' %}
+                                <span class="text-muted">记录已删除</span>
+                            {% endif %}
+                            </small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center text-muted py-3 mb-0">暂无变更记录</p>
+            {% endif %}
+        </div>
+    </div>
 </div>
 <a href="{{ url_for('wages.employee_list') }}" class="btn btn-secondary mt-3"><i class="bi bi-arrow-left"></i> 返回员工列表</a>
 {% endblock %}

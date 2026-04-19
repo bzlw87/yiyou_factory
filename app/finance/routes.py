@@ -1,9 +1,11 @@
 """
 财务模块 - 应收账款、应付账款、原材料采购、收付款、应收应付调整
 """
+from io import BytesIO
 from decimal import Decimal
-from datetime import datetime
-from flask import render_template, request, redirect, url_for, flash
+from datetime import datetime, date
+import openpyxl
+from flask import render_template, request, redirect, url_for, flash, send_file
 from flask_login import login_required
 from app.finance import finance_bp
 from app.models import (Customer, Supplier, DeliveryOrder, PaymentReceived,
@@ -42,6 +44,40 @@ def receivables():
                 'balance': balance
             })
     return render_template('finance/receivables.html', data=data)
+
+
+@finance_bp.route('/receivables/export')
+@login_required
+@permission_required('finance', 'view')
+def receivables_export():
+    customers = Customer.query.order_by(Customer.name).all()
+    rows = []
+    for c in customers:
+        total_delivery = db.session.query(func.sum(DeliveryOrder.total_cost))\
+            .filter(DeliveryOrder.customer_id == c.id).scalar() or 0
+        total_adjust = db.session.query(func.sum(ReceivableAdjustment.amount))\
+            .filter(ReceivableAdjustment.customer_id == c.id).scalar() or 0
+        total_received = db.session.query(func.sum(PaymentReceived.amount))\
+            .filter(PaymentReceived.customer_id == c.id).scalar() or 0
+        total_receivable = float(total_delivery) + float(total_adjust)
+        balance = total_receivable - float(total_received)
+        if total_receivable > 0 or float(total_received) > 0:
+            rows.append((c.name, float(total_delivery), total_receivable, float(total_received), balance))
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '应收账款'
+    ws.append(['客户', '送货合计', '应收总额', '已收金额', '欠款余额'])
+    for row in rows:
+        ws.append(list(row))
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output,
+                     download_name=f'应收账款_{date.today().strftime("%Y%m%d")}.xlsx',
+                     as_attachment=True,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 @finance_bp.route('/receivables/<int:customer_id>')
@@ -190,6 +226,40 @@ def payables():
                 'balance': balance
             })
     return render_template('finance/payables.html', data=data)
+
+
+@finance_bp.route('/payables/export')
+@login_required
+@permission_required('finance', 'view')
+def payables_export():
+    suppliers = Supplier.query.order_by(Supplier.name).all()
+    rows = []
+    for s in suppliers:
+        total_purchase = db.session.query(func.sum(RawMaterialPurchase.total_amount))\
+            .filter(RawMaterialPurchase.supplier_id == s.id).scalar() or 0
+        total_adjust = db.session.query(func.sum(PayableAdjustment.amount))\
+            .filter(PayableAdjustment.supplier_id == s.id).scalar() or 0
+        total_paid = db.session.query(func.sum(PaymentMade.amount))\
+            .filter(PaymentMade.supplier_id == s.id).scalar() or 0
+        total_payable = float(total_purchase) + float(total_adjust)
+        balance = total_payable - float(total_paid)
+        if total_payable > 0 or float(total_paid) > 0:
+            rows.append((s.name, float(total_purchase), total_payable, float(total_paid), balance))
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '应付账款'
+    ws.append(['供应商', '采购合计', '应付总额', '已付金额', '欠款余额'])
+    for row in rows:
+        ws.append(list(row))
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output,
+                     download_name=f'应付账款_{date.today().strftime("%Y%m%d")}.xlsx',
+                     as_attachment=True,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 @finance_bp.route('/payables/<int:supplier_id>')

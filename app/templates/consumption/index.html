@@ -15,6 +15,7 @@
         <div class="col-12 col-md-3">
             <button class="btn btn-outline-primary btn-sm" type="submit"><i class="bi bi-search"></i> 搜索</button>
             <a href="{{ url_for('consumption.index') }}" class="btn btn-outline-secondary btn-sm">重置</a>
+            <a href="{{ url_for('consumption.export', vat=vat, keyword=keyword) }}" class="btn btn-outline-success btn-sm"><i class="bi bi-download"></i> 导出Excel</a>
         </div>
     </form>
 </div></div>

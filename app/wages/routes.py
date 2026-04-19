@@ -1,13 +1,15 @@
 """
 工资模块 - 统一的员工工资管理，对齐纸质账本
 """
+from io import BytesIO
 from decimal import Decimal
 from datetime import date
-from flask import render_template, request, redirect, url_for, flash
+import openpyxl
+from flask import render_template, request, redirect, url_for, flash, send_file
 from flask_login import login_required
 from app.wages import wages_bp
-from app.models import Employee, WageRecord
-from app.helpers import permission_required, log_operation, record_to_dict
+from app.models import Employee, WageRecord, OperationLog
+from app.helpers import permission_required, log_operation, record_to_dict, compute_diff
 from app import db
 from sqlalchemy import func
 import logging
@@ -41,6 +43,40 @@ def employee_list():
     return render_template('wages/employee_list.html',
                            employees=employees, positions=positions,
                            position=position, current_year=current_year)
+
+
+@wages_bp.route('/export/<int:emp_id>')
+@login_required
+@permission_required('wages', 'view')
+def export(emp_id):
+    emp = Employee.query.get_or_404(emp_id)
+    year = request.args.get('year', date.today().year, type=int)
+
+    records = WageRecord.query.filter_by(employee_id=emp_id, year=year)\
+        .order_by(WageRecord.month).all()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '工资记录'
+    ws.append(['月份', '应发工资', '休息天数', '扣款', '实发金额', '备注'])
+    for r in records:
+        month_label = '年终' if r.month == 0 else f'{r.month}月'
+        ws.append([
+            month_label,
+            float(r.gross_wage) if r.gross_wage else '',
+            r.rest_days or '',
+            float(r.deduction) if r.deduction else '',
+            float(r.net_wage) if r.net_wage else '',
+            r.remark or '',
+        ])
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output,
+                     download_name=f'工资_{emp.name}_{year}年.xlsx',
+                     as_attachment=True,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 @wages_bp.route('/employee/create', methods=['GET', 'POST'])
@@ -115,10 +151,18 @@ def wage_detail(emp_id):
         years.append(year)
         years.sort(reverse=True)
 
+    salary_logs = OperationLog.query.filter(
+        OperationLog.module == 'employee',
+        OperationLog.record_id == emp_id
+    ).order_by(OperationLog.operated_at.desc()).limit(20).all()
+    for log in salary_logs:
+        log.diffs = compute_diff(log.before_data, log.after_data)
+
     return render_template('wages/wage_detail.html',
                            emp=emp, records=records, year=year, years=years,
                            total_gross=total_gross, total_deduction=total_deduction,
-                           total_net=total_net, paid_count=paid_count)
+                           total_net=total_net, paid_count=paid_count,
+                           salary_logs=salary_logs)
 
 
 @wages_bp.route('/record/create/<int:emp_id>', methods=['GET', 'POST'])

@@ -2,7 +2,7 @@
 管理员模块 - 用户/权限/客户/供应商/品种/原材料品种/工资费率/操作日志
 """
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required
 from app.admin import admin_bp
@@ -529,3 +529,23 @@ def operation_log_list():
                            modules=all_modules, users=users,
                            module=module, user_id=user_id, action=action,
                            date_from=date_from, date_to=date_to)
+
+
+@admin_bp.route('/logs/cleanup', methods=['POST'])
+@login_required
+@admin_required
+def logs_cleanup():
+    months = request.form.get('months', 12, type=int)
+    if months < 1:
+        months = 1
+    cutoff = datetime.now() - timedelta(days=months * 30)
+    try:
+        count = OperationLog.query.filter(OperationLog.operated_at < cutoff).count()
+        OperationLog.query.filter(OperationLog.operated_at < cutoff).delete()
+        db.session.commit()
+        flash(f'已清理 {count} 条旧日志（{months} 个月前）', 'success')
+    except Exception as e:
+        db.session.rollback()
+        logging.error(f'日志清理失败: {e}')
+        flash('清理失败，请重试', 'danger')
+    return redirect(url_for('admin.operation_log_list'))

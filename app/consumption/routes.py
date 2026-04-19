@@ -1,14 +1,61 @@
 """
 用纱核算路由 - 对应纸质记录的一行一条
 """
+from io import BytesIO
 from decimal import Decimal
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from datetime import date
+import openpyxl
+from flask import render_template, request, redirect, url_for, flash, jsonify, send_file
 from flask_login import login_required
 from app.consumption import consumption_bp
 from app.models import YarnConsumption, ProductionOrder, Customer, YarnVariety
 from app.helpers import permission_required, log_operation, record_to_dict
 from app import db
 import logging
+
+
+@consumption_bp.route('/export')
+@login_required
+@permission_required('consumption', 'view')
+def export():
+    vat = request.args.get('vat', '', type=str).strip()
+    keyword = request.args.get('keyword', '', type=str).strip()
+
+    query = YarnConsumption.query.join(ProductionOrder)
+    if vat:
+        query = query.filter(ProductionOrder.vat_number.contains(vat))
+    if keyword:
+        query = query.join(Customer).filter(Customer.name.contains(keyword))
+
+    records = query.order_by(YarnConsumption.created_at.desc()).all()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '用纱核算'
+    ws.append(['客户', '缸次号', '板长', '浆长', '来纱来源', '来纱织数', '来纱品种', '来纱重量', '本次用量', '余下织数', '余下品种', '余下重量'])
+    for r in records:
+        ws.append([
+            r.production_order.customer.name if r.production_order and r.production_order.customer else '',
+            r.production_order.vat_number if r.production_order else '',
+            float(r.board_length) if r.board_length else '',
+            float(r.sizing_length) if r.sizing_length else '',
+            r.incoming_source or '',
+            r.incoming_yarn_count or '',
+            r.incoming_variety or '',
+            r.incoming_weight or '',
+            r.usage_weight or '',
+            r.remaining_yarn_count or '',
+            r.remaining_variety or '',
+            r.remaining_weight or '',
+        ])
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output,
+                     download_name=f'用纱核算_{date.today().strftime("%Y%m%d")}.xlsx',
+                     as_attachment=True,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 @consumption_bp.route('/api/productions')

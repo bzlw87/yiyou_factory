@@ -2,9 +2,11 @@
 送货记录路由 - 含费率自动带入和缸号明细
 """
 import json
+from io import BytesIO
 from decimal import Decimal
-from datetime import datetime
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from datetime import datetime, date
+import openpyxl
+from flask import render_template, request, redirect, url_for, flash, jsonify, send_file
 from flask_login import login_required
 from app.delivery import delivery_bp
 from app.models import DeliveryOrder, DeliveryDetail, Customer
@@ -49,6 +51,61 @@ def index():
                            pagination=pagination,
                            keyword=keyword, order_no=order_no,
                            date_from=date_from, date_to=date_to)
+
+
+@delivery_bp.route('/export')
+@login_required
+@permission_required('delivery', 'view')
+def export():
+    keyword = request.args.get('keyword', '', type=str).strip()
+    order_no = request.args.get('order_no', '', type=str).strip()
+    date_from = request.args.get('date_from', '', type=str).strip()
+    date_to = request.args.get('date_to', '', type=str).strip()
+
+    query = DeliveryOrder.query.join(Customer)
+    if keyword:
+        query = query.filter(Customer.name.contains(keyword))
+    if order_no:
+        query = query.filter(DeliveryOrder.order_number.contains(order_no))
+    if date_from:
+        try:
+            d = datetime.strptime(date_from, '%Y-%m-%d').date()
+            query = query.filter(DeliveryOrder.delivery_date >= d)
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            d = datetime.strptime(date_to, '%Y-%m-%d').date()
+            query = query.filter(DeliveryOrder.delivery_date <= d)
+        except ValueError:
+            pass
+
+    records = query.order_by(DeliveryOrder.delivery_date.desc()).all()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = '送货记录'
+    ws.append(['日期', '单号', '客户', '缸次', '板长', '染色长度', '颜色', '费率', '费用合计'])
+    for r in records:
+        ws.append([
+            str(r.delivery_date) if r.delivery_date else '',
+            r.order_number or '',
+            r.customer.name if r.customer else '',
+            r.vat_batch or '',
+            float(r.board_length) if r.board_length else '',
+            float(r.dyeing_length) if r.dyeing_length else '',
+            r.color or '',
+            float(r.rate) if r.rate else '',
+            float(r.total_cost) if r.total_cost else '',
+        ])
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output,
+                     download_name=f'送货记录_{date.today().strftime("%Y%m%d")}.xlsx',
+                     as_attachment=True,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 @delivery_bp.route('/api/match-rate')
