@@ -2,7 +2,7 @@
 管理员模块 - 用户/权限/客户/供应商/品种/原材料品种/工资费率/操作日志
 """
 from decimal import Decimal
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required
 from app.admin import admin_bp
@@ -20,6 +20,7 @@ MODULES = {
     'delivery': '送货记录',
     'finance': '财务管理',
     'wages': '工资管理',
+    'employee': '员工管理',
 }
 
 
@@ -538,7 +539,8 @@ def logs_cleanup():
     months = request.form.get('months', 12, type=int)
     if months < 1:
         months = 1
-    cutoff = datetime.now() - timedelta(days=months * 30)
+    _CST = timezone(timedelta(hours=8))
+    cutoff = datetime.now(_CST).replace(tzinfo=None) - timedelta(days=months * 30)
     try:
         count = OperationLog.query.filter(OperationLog.operated_at < cutoff).count()
         OperationLog.query.filter(OperationLog.operated_at < cutoff).delete()

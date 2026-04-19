@@ -93,6 +93,8 @@ def employee_create():
                 remark=request.form.get('remark', '').strip()
             )
             db.session.add(emp)
+            db.session.flush()
+            log_operation('employee', emp.id, '新增', after=record_to_dict(emp))
             db.session.commit()
             flash('员工添加成功！', 'success')
             return redirect(url_for('wages.employee_list'))
@@ -110,12 +112,14 @@ def employee_edit(id):
     emp = Employee.query.get_or_404(id)
     if request.method == 'POST':
         try:
+            before = record_to_dict(emp)
             emp.name = request.form['name'].strip()
             emp.position = request.form['position'].strip()
             emp.base_salary = Decimal(request.form['base_salary']) if request.form.get('base_salary') else None
             emp.rent_subsidy = Decimal(request.form['rent_subsidy']) if request.form.get('rent_subsidy') else 0
             emp.is_active = 'is_active' in request.form
             emp.remark = request.form.get('remark', '').strip()
+            log_operation('employee', emp.id, '编辑', before=before, after=record_to_dict(emp))
             db.session.commit()
             flash('员工信息更新成功！', 'success')
             return redirect(url_for('wages.employee_list'))
